@@ -8,13 +8,12 @@ Este proyecto demuestra la integración eficiente entre lenguajes de alto nivel 
 
 | Menú Principal | Gameplay (Nivel 1) |
 |:---:|:---:|
-| ![Menú](<img width="1400" height="936" alt="image" src="https://github.com/user-attachments/assets/d775fcd7-6d9b-4f67-a6c3-1df760f834e3" />) | ![Gameplay](<img width="1395" height="934" alt="image" src="https://github.com/user-attachments/assets/417fdcf2-a4c6-4e23-9b21-334744a326d8" />
-) |
+| ![Menú](screenshots/menu.png) | ![Gameplay](screenshots/gameplay.png) |
 | *Acceso a modos y créditos* | *Física de rebote dinámica* |
 
 | Pantalla de Victoria | Créditos |
 |:---:|:---:|
-| ![Victoria](screenshots/win.png) | ![Créditos](<img width="1399" height="936" alt="image" src="https://github.com/user-attachments/assets/8cb7fb3f-4ffb-4f6c-912c-c692fdab4af6" />) |
+| ![Victoria](screenshots/win.png) | ![Créditos](screenshots/credits.png) |
 | *Mensaje al completar los 10 niveles* | *Reconocimiento a los autores* |
 
 > *Nota: Reemplaza las rutas de imagen con tus propias capturas.*
@@ -80,7 +79,7 @@ Este proyecto está diseñado para **Visual Studio** en arquitectura **x86** (32
 
 ## 👥 Autores
 
-Proyecto desarrollado para la materia de **Organización y Arquitectura de Computadoras**:
+Proyecto desarrollado con fines académicos para la materia de **Organización y Arquitectura de Computadoras** para demostrar la integración de lenguajes de alto y bajo nivel:
 
 * **♥ Astrid Yamilet Jimenez Barrera ♥**
 * **✨ Erick Anselmo Moya Monreal ✨**
