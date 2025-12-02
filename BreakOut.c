@@ -4,11 +4,15 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h> 
+#include <stdlib.h> // Para rand() y srand()
+#include <time.h>   // Para time()
 
 // --- CONSTANTES ---
 const int ANCHO_VENTANA = 1400;
 const int ALTO_VENTANA = 900;
 #define MAX_SCORES 10
+#define MAX_VIDAS 5
+#define PUNTAJE_VIDA_EXTRA 5000
 
 // Estados del Juego
 #define ESTADO_MENU         0
@@ -18,11 +22,10 @@ const int ALTO_VENTANA = 900;
 #define ESTADO_INPUT_NOMBRE 4
 #define ESTADO_MEJORES      5
 
-// Objetos Escalamiento
-const float PADDLE_ANCHO = 180.0f;
+// --- AJUSTES DE BALANCE ---
+const float PADDLE_ANCHO = 220.0f; // Paddle grande para facilitar
 const float PADDLE_ALTO = 30.0f;
-// Velocidad base (aumentará con niveles)
-const float VEL_BASE = 7.0f;
+const float VEL_BASE = 5.0f;       // Velocidad inicial amigable
 const float PELOTA_TAM = 26.0f;
 
 // Ladrillos
@@ -43,21 +46,42 @@ typedef struct {
 typedef struct {
     SDL_FRect rect;
     bool activo;
+    int resistencia;
+    int resistenciaMax;
+    int filaIdx;
 } Ladrillo;
 
 // --- MAPAS DE NIVELES (10 Niveles) ---
 // 1 = Ladrillo, 0 = Vacío
+// CAMBIO EN NIVEL 1: Ahora solo tiene 3 filas para ser más rápido y divertido
 const int PATRONES[10][FILAS][COLUMNAS] = {
-    { {1,1,1,1,1,1,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1} }, // N1: Muro
-    { {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1} }, // N2: Ajedrez
-    { {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1} }, // N3: Columnas
-    { {1,1,1,1,1,1,1,1,1,1}, {0,1,1,1,1,1,1,1,1,0}, {0,0,1,1,1,1,1,1,0,0}, {0,0,0,1,1,1,1,0,0,0}, {0,0,0,0,1,1,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0} }, // N4: Piramide
-    { {1,1,0,0,0,0,0,0,1,1}, {1,1,0,0,0,0,0,0,1,1}, {1,1,0,0,1,1,0,0,1,1}, {1,1,0,0,1,1,0,0,1,1}, {1,1,0,0,0,0,0,0,1,1}, {1,1,0,0,0,0,0,0,1,1} }, // N5: Tunel
-    { {1,0,0,0,0,0,0,0,0,1}, {0,1,0,0,0,0,0,0,1,0}, {0,0,1,0,0,0,0,1,0,0}, {0,0,0,1,1,1,1,0,0,0}, {0,0,1,0,0,0,0,1,0,0}, {1,0,0,0,0,0,0,0,0,1} }, // N6: X
-    { {0,1,1,0,0,0,0,1,1,0}, {1,1,1,1,0,0,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1}, {0,1,1,1,1,1,1,1,1,0}, {0,0,1,1,1,1,1,1,0,0}, {0,0,0,1,1,1,1,0,0,0} }, // N7: Corazón
-    { {1,1,1,1,1,1,1,1,1,1}, {1,0,0,0,0,0,0,0,0,1}, {1,0,1,1,1,1,1,1,0,1}, {1,0,1,0,0,0,0,1,0,1}, {1,0,0,0,0,0,0,0,0,1}, {1,1,1,1,1,1,1,1,1,1} }, // N8: Cajas
-    { {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0} }, // N9: Denso
-    { {1,0,0,1,0,0,1,0,0,1}, {0,0,0,0,0,0,0,0,0,0}, {0,1,1,0,0,0,0,1,1,0}, {0,0,0,0,0,0,0,0,0,0}, {1,0,0,0,0,0,0,0,0,1}, {0,1,1,1,1,1,1,1,1,0} }  // N10: Boss Face
+    // NIVEL 1: Fácil (30 ladrillos)
+    {
+        {1,1,1,1,1,1,1,1,1,1},
+        {1,1,1,1,1,1,1,1,1,1},
+        {1,1,1,1,1,1,1,1,1,1},
+        {0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0}
+    },
+    // NIVEL 2: Ajedrez (30 ladrillos)
+    { {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1} },
+    // NIVEL 3: Columnas
+    { {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1}, {1,1,0,1,1,0,1,1,0,1} },
+    // NIVEL 4: Pirámide Invertida
+    { {1,1,1,1,1,1,1,1,1,1}, {0,1,1,1,1,1,1,1,1,0}, {0,0,1,1,1,1,1,1,0,0}, {0,0,0,1,1,1,1,0,0,0}, {0,0,0,0,1,1,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0} },
+    // NIVEL 5: Túnel
+    { {1,1,0,0,0,0,0,0,1,1}, {1,1,0,0,0,0,0,0,1,1}, {1,1,0,0,1,1,0,0,1,1}, {1,1,0,0,1,1,0,0,1,1}, {1,1,0,0,0,0,0,0,1,1}, {1,1,0,0,0,0,0,0,1,1} },
+    // NIVEL 6: La X (Empieza resistencia)
+    { {1,0,0,0,0,0,0,0,0,1}, {0,1,0,0,0,0,0,0,1,0}, {0,0,1,0,0,0,0,1,0,0}, {0,0,0,1,1,1,1,0,0,0}, {0,0,1,0,0,0,0,1,0,0}, {1,0,0,0,0,0,0,0,0,1} },
+    // NIVEL 7: Corazón
+    { {0,1,1,0,0,0,0,1,1,0}, {1,1,1,1,0,0,1,1,1,1}, {1,1,1,1,1,1,1,1,1,1}, {0,1,1,1,1,1,1,1,1,0}, {0,0,1,1,1,1,1,1,0,0}, {0,0,0,1,1,1,1,0,0,0} },
+    // NIVEL 8: Caja
+    { {1,1,1,1,1,1,1,1,1,1}, {1,0,0,0,0,0,0,0,0,1}, {1,0,1,1,1,1,1,1,0,1}, {1,0,1,0,0,0,0,1,0,1}, {1,0,0,0,0,0,0,0,0,1}, {1,1,1,1,1,1,1,1,1,1} },
+    // NIVEL 9: Denso
+    { {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0}, {0,1,0,1,0,1,0,1,0,1}, {1,0,1,0,1,0,1,0,1,0} },
+    // NIVEL 10: Cara Boss
+    { {1,0,0,1,0,0,1,0,0,1}, {0,0,0,0,0,0,0,0,0,0}, {0,1,1,0,0,0,0,1,1,0}, {0,0,0,0,0,0,0,0,0,0}, {1,0,0,0,0,0,0,0,0,1}, {0,1,1,1,1,1,1,1,1,0} }
 };
 
 // --- GLOBALES ---
@@ -65,13 +89,12 @@ Jugador mejoresPuntajes[MAX_SCORES];
 char inputText[16] = "";
 int nivelActual = 1;
 int ladrillosRestantes = 0;
+int proximaVida = PUNTAJE_VIDA_EXTRA;
 
 // --- FUNCIONES ---
-
-// Cargar Nivel desde Matriz
 void CargarNivel(Ladrillo* ladrillos, int nivel) {
     if (nivel < 1) nivel = 1;
-    if (nivel > 10) nivel = 1; // Loop al nivel 1 si pasas el 10
+    if (nivel > 10) nivel = 1;
 
     int mapIdx = nivel - 1;
     int count = 0;
@@ -79,26 +102,36 @@ void CargarNivel(Ladrillo* ladrillos, int nivel) {
 
     for (int i = 0; i < FILAS; i++) {
         for (int j = 0; j < COLUMNAS; j++) {
-            // Posición fija
             ladrillos[count].rect.x = LADRILLO_OFFSET_X + (j * (LADRILLO_ANCHO + LADRILLO_ESPACIO));
             ladrillos[count].rect.y = LADRILLO_OFFSET_Y + (i * (LADRILLO_ALTO + LADRILLO_ESPACIO));
             ladrillos[count].rect.w = LADRILLO_ANCHO;
             ladrillos[count].rect.h = LADRILLO_ALTO;
+            ladrillos[count].filaIdx = i;
 
-            // Activar según mapa
             if (PATRONES[mapIdx][i][j] == 1) {
                 ladrillos[count].activo = true;
                 ladrillosRestantes++;
+
+                // Resistencia a partir del nivel 6
+                if (nivel >= 6) {
+                    if (i == 0 || i == 1) ladrillos[count].resistencia = 3;
+                    else if (i == 2 || i == 3) ladrillos[count].resistencia = 2;
+                    else ladrillos[count].resistencia = 1;
+                }
+                else {
+                    ladrillos[count].resistencia = 1;
+                }
+                ladrillos[count].resistenciaMax = ladrillos[count].resistencia;
             }
             else {
                 ladrillos[count].activo = false;
+                ladrillos[count].resistencia = 0;
             }
             count++;
         }
     }
 }
 
-// Persistencia
 void CargarPuntajes() {
     FILE* file = fopen("scores.dat", "rb");
     if (file) {
@@ -122,7 +155,6 @@ void GuardarPuntajes() {
     }
 }
 
-// Algoritmo de Ordenamiento (ASM)
 void OrdenarPuntajesASM() {
     Jugador* pLista = mejoresPuntajes;
     int n = MAX_SCORES;
@@ -141,11 +173,8 @@ void OrdenarPuntajesASM() {
             mov edx, [edi + 20 + 16]
             cmp eax, edx
             jge NoSwap
-
-            ; SWAP(20 bytes)
             mov[edi + 16], edx
             mov[edi + 20 + 16], eax
-
             mov eax, [edi]
             mov edx, [edi + 20]
             mov[edi], edx
@@ -172,7 +201,6 @@ void OrdenarPuntajesASM() {
     }
 }
 
-// Visuales
 void DibujarTextoCentrado(SDL_Renderer* r, TTF_Font* f, const char* texto, int y, SDL_Color c) {
     if (!f || !texto || strlen(texto) == 0) return;
     SDL_Surface* surf = TTF_RenderText_Blended(f, texto, 0, c);
@@ -200,6 +228,8 @@ void DibujarCorazon(SDL_Renderer* renderer, float x, float y, float escala) {
 
 // --- MAIN ---
 int main(int argc, char* argv[]) {
+    srand((unsigned int)time(NULL));
+
     if (!SDL_Init(SDL_INIT_VIDEO)) return 1;
     if (TTF_Init() < 0) return 1;
 
@@ -207,15 +237,13 @@ int main(int argc, char* argv[]) {
 
     SDL_Window* ventana = NULL;
     SDL_Renderer* renderer = NULL;
-    if (!SDL_CreateWindowAndRenderer("Breakout - ASM Levels Edition", ANCHO_VENTANA, ALTO_VENTANA, 0, &ventana, &renderer)) return 1;
+    if (!SDL_CreateWindowAndRenderer("Breakout - Astrid Jimenez & Erick Moya", ANCHO_VENTANA, ALTO_VENTANA, 0, &ventana, &renderer)) return 1;
 
-    // Fuentes
     TTF_Font* fontRetro = TTF_OpenFont("RETRO.TTF", 35);
     TTF_Font* fontTitulo = TTF_OpenFont("RETRO.TTF", 80);
     if (!fontRetro) fontRetro = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 35);
     if (!fontTitulo) fontTitulo = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 80);
 
-    // Variables Juego
     int estado_actual = ESTADO_MENU;
     int corriendo = 1;
     int vidas = 3;
@@ -223,32 +251,25 @@ int main(int argc, char* argv[]) {
 
     SDL_FRect paddle = { (ANCHO_VENTANA - PADDLE_ANCHO) / 2, ALTO_VENTANA - 60.0f, PADDLE_ANCHO, PADDLE_ALTO };
     SDL_FRect pelota = { ANCHO_VENTANA / 2, ALTO_VENTANA / 2, PELOTA_TAM, PELOTA_TAM };
-
-    // Velocidad inicial
     float vel_x = VEL_BASE;
     float vel_y = -VEL_BASE;
 
-    // Ladrillos
     Ladrillo ladrillos[FILAS * COLUMNAS];
-    // Colores por fila
     SDL_Color coloresFilas[6] = { {210,50,50,255}, {210,140,50,255}, {200,200,50,255}, {50,180,50,255}, {50,100,200,255}, {150,50,200,255} };
 
-    // Cargar Nivel 1 al inicio
     nivelActual = 1;
+    proximaVida = PUNTAJE_VIDA_EXTRA;
     CargarNivel(ladrillos, nivelActual);
 
-    // Inputs
     int input_enter = 0, input_esc = 0;
     SDL_Event evento;
     const bool* teclas = SDL_GetKeyboardState(NULL);
     SDL_Color colorBlanco = { 255, 255, 255, 255 };
     SDL_Color colorAmarillo = { 255, 255, 0, 255 };
 
-    // --- BUCLE PRINCIPAL ---
     while (corriendo) {
         input_enter = 0; input_esc = 0;
 
-        // 1. EVENTOS
         while (SDL_PollEvent(&evento)) {
             if (evento.type == SDL_EVENT_QUIT) corriendo = 0;
 
@@ -259,8 +280,6 @@ int main(int argc, char* argv[]) {
             if (evento.type == SDL_EVENT_KEY_DOWN) {
                 if (evento.key.key == SDLK_RETURN) input_enter = 1;
                 if (evento.key.key == SDLK_ESCAPE) input_esc = 1;
-
-                // ATAJO TAB: Solo en MENU
                 if (evento.key.key == SDLK_TAB && estado_actual == ESTADO_MENU) estado_actual = ESTADO_MEJORES;
 
                 if (estado_actual == ESTADO_INPUT_NOMBRE && evento.key.key == SDLK_BACKSPACE) {
@@ -270,7 +289,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // 2. LÓGICA DE ESTADOS (ASM)
+        // LÓGICA DE ESTADOS (ASM)
         __asm {
             mov eax, estado_actual
             cmp eax, ESTADO_MENU
@@ -286,7 +305,6 @@ int main(int argc, char* argv[]) {
             cmp eax, ESTADO_MEJORES
             je LogicaMejores
             jmp FinLogica
-
             LogicaMenu :
             cmp input_esc, 1
                 jne CheckMenuStart
@@ -297,7 +315,6 @@ int main(int argc, char* argv[]) {
                 jne FinLogica
                 mov estado_actual, ESTADO_JUGANDO
                 jmp FinLogica
-
                 LogicaJugando :
             cmp input_enter, 1
                 jne CheckGameOver
@@ -308,13 +325,11 @@ int main(int argc, char* argv[]) {
                 jg FinLogica
                 mov estado_actual, ESTADO_GAMEOVER
                 jmp FinLogica
-
                 LogicaPausa :
             cmp input_enter, 1
                 jne FinLogica
                 mov estado_actual, ESTADO_JUGANDO
                 jmp FinLogica
-
                 LogicaGameOver :
             cmp input_enter, 1
                 jne CheckExitGO
@@ -327,13 +342,11 @@ int main(int argc, char* argv[]) {
                 mov vidas, 3
                 mov puntaje, 0
                 jmp FinLogica
-
                 LogicaInput :
             cmp input_enter, 1
                 jne FinLogica
                 mov estado_actual, ESTADO_MEJORES
                 jmp FinLogica
-
                 LogicaMejores :
             cmp input_esc, 1
                 jne FinLogica
@@ -343,7 +356,7 @@ int main(int argc, char* argv[]) {
                 FinLogica :
         }
 
-        // 3. LOGICA AUXILIAR EN C (Transiciones complejas)
+        // LOGICA AUXILIAR EN C
         if (estado_actual == ESTADO_MEJORES && input_enter) {
             SDL_StopTextInput(ventana);
             if (strlen(inputText) == 0) strcpy_s(inputText, 16, "ANONIMO");
@@ -357,22 +370,22 @@ int main(int argc, char* argv[]) {
         if (estado_actual == ESTADO_INPUT_NOMBRE && !SDL_TextInputActive(ventana)) SDL_StartTextInput(ventana);
 
         if (estado_actual == ESTADO_MENU && input_esc) {
-            // Reset Total
             pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
-            vel_x = VEL_BASE; vel_y = -VEL_BASE;
+            vel_y = -VEL_BASE;
+            vel_x = (rand() % 2 == 0) ? VEL_BASE : -VEL_BASE;
             nivelActual = 1;
+            proximaVida = PUNTAJE_VIDA_EXTRA;
             CargarNivel(ladrillos, nivelActual);
         }
 
-        // 4. FÍSICA (ASM) - Solo Jugando
+        // FÍSICA (ASM) - Solo Jugando
         if (estado_actual == ESTADO_JUGANDO) {
             float temp_px = paddle.x;
-            float temp_pv = VEL_BASE * 1.5f; // Paddle un poco más rápido que la bola base
+            float temp_pv = VEL_BASE * 1.5f;
             int dir_paddle = 0;
             if (teclas[SDL_SCANCODE_RIGHT]) dir_paddle = 1;
             if (teclas[SDL_SCANCODE_LEFT])  dir_paddle = -1;
 
-            // Movimiento Paddle ASM
             if (dir_paddle != 0) {
                 __asm {
                     fld temp_px
@@ -388,7 +401,6 @@ int main(int argc, char* argv[]) {
             if (paddle.x < 0) paddle.x = 0;
             if (paddle.x + paddle.w > ANCHO_VENTANA) paddle.x = ANCHO_VENTANA - paddle.w;
 
-            // Movimiento Pelota ASM
             __asm {
                 fld pelota.x
                 fadd vel_x
@@ -401,36 +413,52 @@ int main(int argc, char* argv[]) {
             float ball_r = pelota.x + PELOTA_TAM; float ball_b = pelota.y + PELOTA_TAM;
             float pad_r = paddle.x + PADDLE_ANCHO; float pad_b = paddle.y + PADDLE_ALTO;
 
-            // Rebote Paddle
             if (ball_r >= paddle.x && pelota.x <= pad_r && ball_b >= paddle.y && pelota.y <= pad_b) {
                 vel_y = -fabs(vel_y);
                 pelota.y = paddle.y - PELOTA_TAM - 1.0f;
             }
 
-            // Rebote Ladrillos y Lógica de Niveles
             for (int i = 0; i < FILAS * COLUMNAS; i++) {
                 if (!ladrillos[i].activo) continue;
                 SDL_FRect b = ladrillos[i].rect;
                 if (ball_r >= b.x && pelota.x <= b.x + b.w && ball_b >= b.y && pelota.y <= b.y + b.h) {
-                    ladrillos[i].activo = false;
-                    puntaje += 100;
+
+                    ladrillos[i].resistencia--;
                     vel_y = -vel_y;
 
-                    // --- NIVEL COMPLETADO? ---
-                    ladrillosRestantes--;
-                    if (ladrillosRestantes <= 0) {
-                        nivelActual++;
-                        if (nivelActual > 10) nivelActual = 1;
+                    if (ladrillos[i].resistencia <= 0) {
+                        ladrillos[i].activo = false;
+                        puntaje += 100;
+                        ladrillosRestantes--;
 
-                        CargarNivel(ladrillos, nivelActual);
+                        __asm {
+                            mov eax, puntaje
+                            cmp eax, proximaVida
+                            jl NoVidaExtra
+                            mov ebx, vidas
+                            inc ebx
+                            cmp ebx, MAX_VIDAS
+                            jg TopeVidas
+                            mov vidas, ebx
+                            jmp ActMeta
+                            TopeVidas :
+                            mov vidas, MAX_VIDAS
+                                ActMeta :
+                            add proximaVida, PUNTAJE_VIDA_EXTRA
+                                NoVidaExtra :
+                        }
 
-                        // Reset Pelota y aumentar dificultad
-                        pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
-                        float factor = 1.0f + (nivelActual * 0.15f); // 15% más rápido por nivel
-                        vel_x = VEL_BASE * factor;
-                        vel_y = -VEL_BASE * factor;
-
-                        SDL_Delay(500); // Pausa breve
+                        if (ladrillosRestantes <= 0) {
+                            nivelActual++;
+                            if (nivelActual > 10) nivelActual = 1;
+                            CargarNivel(ladrillos, nivelActual);
+                            pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
+                            float factor = 1.0f + (nivelActual * 0.15f);
+                            float nuevaVel = VEL_BASE * factor;
+                            vel_x = (rand() % 2 == 0) ? nuevaVel : -nuevaVel;
+                            vel_y = -nuevaVel;
+                            SDL_Delay(500);
+                        }
                     }
                 }
             }
@@ -440,23 +468,30 @@ int main(int argc, char* argv[]) {
             if (pelota.y > ALTO_VENTANA) {
                 vidas--;
                 pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
-                // Resetear velocidad al perder vida (para que no sea injusto)
-                vel_y = -VEL_BASE * (1.0f + (nivelActual * 0.1f));
+                float velActual = VEL_BASE * (1.0f + (nivelActual * 0.1f));
+                vel_y = -velActual;
+                vel_x = (rand() % 2 == 0) ? velActual : -velActual;
                 SDL_Delay(500);
             }
         }
 
-        // 5. RENDERIZADO
+        // RENDERIZADO
         SDL_SetRenderDrawColor(renderer, 15, 15, 25, 255);
         SDL_RenderClear(renderer);
 
         if (estado_actual == ESTADO_JUGANDO || estado_actual == ESTADO_PAUSA || estado_actual == ESTADO_GAMEOVER) {
-            // Dibujar Nivel
             int idx = 0;
             for (int i = 0; i < FILAS; i++) {
-                SDL_SetRenderDrawColor(renderer, coloresFilas[i].r, coloresFilas[i].g, coloresFilas[i].b, 255);
+                SDL_Color cFila = coloresFilas[i];
                 for (int j = 0; j < COLUMNAS; j++) {
-                    if (ladrillos[idx].activo) SDL_RenderFillRect(renderer, &ladrillos[idx].rect);
+                    if (ladrillos[idx].activo) {
+                        SDL_Color c = cFila;
+                        if (ladrillos[idx].resistenciaMax > 1 && ladrillos[idx].resistencia == 1) {
+                            c.r = 255; c.g = 255; c.b = 255;
+                        }
+                        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 255);
+                        SDL_RenderFillRect(renderer, &ladrillos[idx].rect);
+                    }
                     idx++;
                 }
             }
@@ -465,7 +500,6 @@ int main(int argc, char* argv[]) {
             SDL_SetRenderDrawColor(renderer, 255, 50, 50, 255);
             SDL_RenderFillRect(renderer, &pelota);
 
-            // HUD
             char buf[50]; sprintf_s(buf, 50, "SCORE: %05d", puntaje);
             DibujarTextoCentrado(renderer, fontRetro, buf, 20, colorBlanco);
             char bufNivel[20]; sprintf_s(bufNivel, 20, "NIVEL: %d", nivelActual);
@@ -474,7 +508,6 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < vidas; i++) DibujarCorazon(renderer, ANCHO_VENTANA - 60.0f - (i * 50.0f), 25.0f, 1.5f);
         }
 
-        // UI Interfaces
         if (estado_actual == ESTADO_MENU) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
@@ -502,11 +535,9 @@ int main(int argc, char* argv[]) {
             SDL_RenderClear(renderer);
             DibujarTextoCentrado(renderer, fontTitulo, "NUEVO RECORD!", 150, colorAmarillo);
             DibujarTextoCentrado(renderer, fontRetro, "Escribe tu nombre y da ENTER:", 350, colorBlanco);
-
             SDL_FRect linea = { ANCHO_VENTANA / 2 - 200, 500, 400, 4 };
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderFillRect(renderer, &linea);
-
             if (strlen(inputText) > 0) DibujarTextoCentrado(renderer, fontTitulo, inputText, 420, colorBlanco);
             else DibujarTextoCentrado(renderer, fontRetro, "_", 420, colorBlanco);
         }
