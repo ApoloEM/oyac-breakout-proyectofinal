@@ -14,7 +14,7 @@ Este proyecto demuestra la integración eficiente entre lenguajes de alto nivel 
 
 | Pantalla de Victoria | Créditos |
 |:---:|:---:|
-| ![Victoria](https://github.com/user-attachments/assets/fff556aa-5799-4fdf-a6bf-0d1b3c6db006) | ![Créditos](https://github.com/user-attachments/assets/b3f93282-b019-43df-a18e-04f445b950a7) |
+| ![Victoria](https://github.com/user-attachments/assets/13f9b34e-43ce-4e85-b316-f316426a8d08) | ![Créditos](https://github.com/user-attachments/assets/b3f93282-b019-43df-a18e-04f445b950a7) |
 | *Mensaje al completar los 10 niveles* | *Reconocimiento a los autores* |
 
 ---
