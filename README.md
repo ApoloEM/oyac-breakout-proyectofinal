@@ -8,8 +8,8 @@ Este proyecto demuestra la integración eficiente entre lenguajes de alto nivel 
 
 | Menú Principal | Gameplay (Nivel 1) |
 |:---:|:---:|
-| ![Menú](<img width="1398" height="939" alt="image" src="https://github.com/user-attachments/assets/753c7f0f-b8cc-40cf-ba95-0fe1c8100c94" />
-) | ![Gameplay](<img width="1400" height="943" alt="Screenshot 2025-12-02 183605" src="https://github.com/user-attachments/assets/165bb9c3-bcfa-4c33-9c0c-3631cc51414d" />
+| (<img width="1398" height="939" alt="image" src="https://github.com/user-attachments/assets/753c7f0f-b8cc-40cf-ba95-0fe1c8100c94" />
+) | <img width="1400" height="943" alt="Screenshot 2025-12-02 183605" src="https://github.com/user-attachments/assets/165bb9c3-bcfa-4c33-9c0c-3631cc51414d" />
 ) |
 | *Acceso a modos y créditos* | *Física de rebote dinámica* |
 
