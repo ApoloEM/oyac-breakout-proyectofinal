@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <math.h> 
-#include <stdlib.h> 
-#include <time.h>   
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
 
-const float PADDLE_ANCHO = 200.0f;
-const float VEL_PELOTA_BASE = 6.5f;
-const float VEL_PADDLE_BASE = 13.0f;
+float PADDLE_ANCHO = 200.0f;
+float VEL_PELOTA_BASE = 6.5f;
+float VEL_PADDLE_BASE = 13.0f;
 
 const int ANCHO_VENTANA = 1400;
 const int ALTO_VENTANA = 900;
@@ -24,8 +24,8 @@ const float LADRILLO_OFFSET_Y = 150.0f;
 #define MAX_SCORES 10
 #define MAX_VIDAS 5
 #define PUNTAJE_VIDA_EXTRA 5000
-#define FILAS 6       
-#define COLUMNAS 10   
+#define FILAS 6
+#define COLUMNAS 10
 
 #define ESTADO_MENU         0
 #define ESTADO_JUGANDO      1
@@ -35,6 +35,7 @@ const float LADRILLO_OFFSET_Y = 150.0f;
 #define ESTADO_MEJORES      5
 #define ESTADO_CREDITOS     6
 #define ESTADO_VICTORIA     7
+#define ESTADO_AJUSTES      8
 
 typedef struct {
     char nombre[16];
@@ -68,39 +69,183 @@ int nivelActual = 1;
 int ladrillosRestantes = 0;
 int proximaVida = PUNTAJE_VIDA_EXTRA;
 
+int opcionAjustes = 0;
+int dificultadIdx = 1;
+int velPaddleIdx = 1;
+
+float CalcularVelocidad(int nivel) {
+    float res = 0.0f;
+    float factor = 0.1f;
+    float uno = 1.0f;
+    int n_menos_1 = nivel - 1;
+
+    __asm {
+        fld VEL_PELOTA_BASE
+        fld factor
+        fild n_menos_1
+        fmulp ST(1), ST(0)
+        fadd uno
+        fmulp ST(1), ST(0)
+        fstp res
+    }
+    return res;
+}
+
+void ActualizarDificultad() {
+    __asm {
+        mov eax, dificultadIdx
+        cmp eax, 0
+        je DifFacil
+        cmp eax, 1
+        je DifNormal
+        jmp DifDificil
+
+        DifFacil:
+        mov VEL_PELOTA_BASE, 0x40A00000
+        mov PADDLE_ANCHO, 0x437A0000
+        jmp CheckPaddle
+
+        DifNormal:
+        mov VEL_PELOTA_BASE, 0x40D00000
+        mov PADDLE_ANCHO, 0x43480000
+        jmp CheckPaddle
+
+        DifDificil:
+        mov VEL_PELOTA_BASE, 0x41080000
+        mov PADDLE_ANCHO, 0x43160000
+
+        CheckPaddle:
+        mov eax, velPaddleIdx
+        cmp eax, 0
+        je PadLento
+        cmp eax, 1
+        je PadNormal
+        jmp PadRapido
+
+        PadLento:
+        mov VEL_PADDLE_BASE, 0x41100000
+        jmp FinAjustes
+
+        PadNormal:
+        mov VEL_PADDLE_BASE, 0x41500000
+        jmp FinAjustes
+
+        PadRapido:
+        mov VEL_PADDLE_BASE, 0x41900000
+
+        FinAjustes:
+    }
+}
+
 void CargarNivel(Ladrillo* ladrillos, int nivel) {
-    if (nivel < 1) nivel = 1; if (nivel > 10) nivel = 1;
-    int mapIdx = (nivel - 1) % 10;
-    int count = 0;
     ladrillosRestantes = 0;
+    int temp_int = 0;
 
-    for (int i = 0; i < FILAS; i++) {
-        for (int j = 0; j < COLUMNAS; j++) {
-            ladrillos[count].rect.x = LADRILLO_OFFSET_X + ((float)j * (LADRILLO_ANCHO + LADRILLO_ESPACIO));
-            ladrillos[count].rect.y = LADRILLO_OFFSET_Y + ((float)i * (LADRILLO_ALTO + LADRILLO_ESPACIO));
-            ladrillos[count].rect.w = LADRILLO_ANCHO;
-            ladrillos[count].rect.h = LADRILLO_ALTO;
-            ladrillos[count].filaIdx = i;
+    __asm {
+        mov eax, nivel
+        cmp eax, 1
+        jge CheckMax
+        mov eax, 1
+        jmp SetMapIdx
+        CheckMax:
+        cmp eax, 10
+        jle SetMapIdx
+        mov eax, 1
 
-            if (PATRONES[mapIdx][i][j] == 1) {
-                ladrillos[count].activo = true;
-                ladrillosRestantes++;
-                if (nivel >= 6) {
-                    if (i == 0 || i == 1) ladrillos[count].resistencia = 3;
-                    else if (i == 2 || i == 3) ladrillos[count].resistencia = 2;
-                    else ladrillos[count].resistencia = 1;
-                }
-                else {
-                    ladrillos[count].resistencia = 1;
-                }
-                ladrillos[count].resistenciaMax = ladrillos[count].resistencia;
-            }
-            else {
-                ladrillos[count].activo = false;
-                ladrillos[count].resistencia = 0;
-            }
-            count++;
-        }
+        SetMapIdx:
+        mov nivel, eax
+        dec eax
+        mov ecx, 10
+        cdq
+        idiv ecx
+        mov ebx, edx
+
+        mov esi, ladrillos
+        mov ecx, 0
+
+        LoopFilas:
+        cmp ecx, FILAS
+        jge FinCarga
+        mov edx, 0
+
+        LoopCols:
+        cmp edx, COLUMNAS
+        jge NextFila
+
+        fld LADRILLO_ANCHO
+        fadd LADRILLO_ESPACIO
+        mov temp_int, edx
+        fild temp_int
+        fmulp ST(1), ST(0)
+        fadd LADRILLO_OFFSET_X
+        fstp [esi]
+
+        fld LADRILLO_ALTO
+        fadd LADRILLO_ESPACIO
+        mov temp_int, ecx
+        fild temp_int
+        fmulp ST(1), ST(0)
+        fadd LADRILLO_OFFSET_Y
+        fstp [esi + 4]
+
+        mov eax, LADRILLO_ANCHO
+        mov [esi + 8], eax
+        mov eax, LADRILLO_ALTO
+        mov [esi + 12], eax
+
+        mov [esi + 28], ecx
+
+        mov eax, ebx
+        imul eax, 60
+        mov edi, ecx
+        imul edi, 10
+        add eax, edi
+        add eax, edx
+        imul eax, 4
+        lea edi, PATRONES
+        mov eax, [edi + eax]
+        cmp eax, 1
+        jne LadrilloInactivo
+
+        mov byte ptr [esi + 16], 1
+        inc ladrillosRestantes
+
+        mov eax, 1
+        mov edi, nivel
+        cmp edi, 6
+        jl AsignarRes
+        cmp ecx, 0
+        je Res3
+        cmp ecx, 1
+        je Res3
+        cmp ecx, 2
+        je Res2
+        cmp ecx, 3
+        je Res2
+        jmp AsignarRes
+
+        Res3: mov eax, 3; jmp AsignarRes
+        Res2: mov eax, 2; jmp AsignarRes
+
+        AsignarRes:
+        mov [esi + 20], eax
+        mov [esi + 24], eax
+        jmp AvanzarPtr
+
+        LadrilloInactivo:
+        mov byte ptr [esi + 16], 0
+        mov dword ptr [esi + 20], 0
+
+        AvanzarPtr:
+        add esi, 32
+        inc edx
+        jmp LoopCols
+
+        NextFila:
+        inc ecx
+        jmp LoopFilas
+
+        FinCarga:
     }
 }
 
@@ -128,29 +273,29 @@ void OrdenarPuntajesASM() {
         mov esi, pLista
         mov ecx, n
         dec ecx
-        LoopExterno :
+        LoopExterno:
         push ecx
-            mov edi, esi
-            mov ebx, n
-            dec ebx
-            LoopInterno :
+        mov edi, esi
+        mov ebx, n
+        dec ebx
+        LoopInterno:
         mov eax, [edi + 16]
-            mov edx, [edi + 20 + 16]
-            cmp eax, edx
-            jge NoSwap
-            mov[edi + 16], edx
-            mov[edi + 20 + 16], eax
-            mov eax, [edi]; mov edx, [edi + 20]; mov[edi], edx; mov[edi + 20], eax
-            mov eax, [edi + 4]; mov edx, [edi + 24]; mov[edi + 4], edx; mov[edi + 24], eax
-            mov eax, [edi + 8]; mov edx, [edi + 28]; mov[edi + 8], edx; mov[edi + 28], eax
-            mov eax, [edi + 12]; mov edx, [edi + 32]; mov[edi + 12], edx; mov[edi + 32], eax
-            NoSwap :
+        mov edx, [edi + 20 + 16]
+        cmp eax, edx
+        jge NoSwap
+        mov [edi + 16], edx
+        mov [edi + 20 + 16], eax
+        mov eax, [edi]; mov edx, [edi + 20]; mov [edi], edx; mov [edi + 20], eax
+        mov eax, [edi + 4]; mov edx, [edi + 24]; mov [edi + 4], edx; mov [edi + 24], eax
+        mov eax, [edi + 8]; mov edx, [edi + 28]; mov [edi + 8], edx; mov [edi + 28], eax
+        mov eax, [edi + 12]; mov edx, [edi + 32]; mov [edi + 12], edx; mov [edi + 32], eax
+        NoSwap:
         add edi, 20
-            dec ebx
-            jnz LoopInterno
-            pop ecx
-            dec ecx
-            jnz LoopExterno
+        dec ebx
+        jnz LoopInterno
+        pop ecx
+        dec ecx
+        jnz LoopExterno
     }
 }
 
@@ -235,12 +380,50 @@ int main(int argc, char* argv[]) {
             if (evento.type == SDL_EVENT_KEY_DOWN) {
                 if (evento.key.key == SDLK_RETURN) input_enter = 1;
                 if (evento.key.key == SDLK_ESCAPE) input_esc = 1;
-
                 if (evento.key.key == SDLK_F10) estado_actual = ESTADO_VICTORIA;
 
                 if (estado_actual == ESTADO_MENU) {
                     if (evento.key.key == SDLK_TAB) estado_actual = ESTADO_MEJORES;
                     if (evento.key.key == SDLK_C) estado_actual = ESTADO_CREDITOS;
+                    if (evento.key.key == SDLK_A) estado_actual = ESTADO_AJUSTES;
+                }
+
+                if (estado_actual == ESTADO_AJUSTES) {
+                    if (evento.key.key == SDLK_DOWN) {
+                        opcionAjustes++;
+                        if (opcionAjustes > 2) opcionAjustes = 0;
+                    }
+                    if (evento.key.key == SDLK_UP) {
+                        opcionAjustes--;
+                        if (opcionAjustes < 0) opcionAjustes = 2;
+                    }
+
+                    if (evento.key.key == SDLK_RIGHT) {
+                        if (opcionAjustes == 0) {
+                            dificultadIdx = (dificultadIdx + 1) % 3;
+                        }
+                        else if (opcionAjustes == 1) {
+                            velPaddleIdx = (velPaddleIdx + 1) % 3;
+                        }
+                        else if (opcionAjustes == 2) {
+                            nivelActual++;
+                            if (nivelActual > 10) nivelActual = 1;
+                        }
+                        ActualizarDificultad();
+                    }
+                    if (evento.key.key == SDLK_LEFT) {
+                        if (opcionAjustes == 0) {
+                            dificultadIdx = (dificultadIdx - 1 + 3) % 3;
+                        }
+                        else if (opcionAjustes == 1) {
+                            velPaddleIdx = (velPaddleIdx - 1 + 3) % 3;
+                        }
+                        else if (opcionAjustes == 2) {
+                            nivelActual--;
+                            if (nivelActual < 1) nivelActual = 10;
+                        }
+                        ActualizarDificultad();
+                    }
                 }
 
                 if (estado_actual == ESTADO_INPUT_NOMBRE && evento.key.key == SDLK_BACKSPACE) {
@@ -248,6 +431,16 @@ int main(int argc, char* argv[]) {
                     if (len > 0) inputText[len - 1] = '\0';
                 }
             }
+        }
+
+        if (estado_actual == ESTADO_MENU && input_enter) {
+            CargarNivel(ladrillos, nivelActual);
+            pelota.x = (float)ANCHO_VENTANA / 2.0f; pelota.y = (float)ALTO_VENTANA / 2.0f;
+            paddle.w = PADDLE_ANCHO;
+            paddle.x = ((float)ANCHO_VENTANA - PADDLE_ANCHO) / 2.0f;
+            float v = CalcularVelocidad(nivelActual);
+            vel_x = (rand() % 2 == 0) ? v : -v;
+            vel_y = -v;
         }
 
         __asm {
@@ -268,73 +461,83 @@ int main(int argc, char* argv[]) {
             je LogicaCreditos
             cmp eax, ESTADO_VICTORIA
             je LogicaVictoria
+            cmp eax, ESTADO_AJUSTES
+            je LogicaAjustes
             jmp FinLogica
-            LogicaMenu :
+            LogicaMenu:
             cmp input_esc, 1
-                jne CheckMenuStart
-                mov corriendo, 0
-                jmp FinLogica
-                CheckMenuStart :
+            jne CheckMenuStart
+            mov corriendo, 0
+            jmp FinLogica
+            CheckMenuStart:
             cmp input_enter, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_JUGANDO
-                jmp FinLogica
-                LogicaJugando :
+            jne FinLogica
+            mov estado_actual, ESTADO_JUGANDO
+            jmp FinLogica
+            LogicaJugando:
             cmp input_enter, 1
-                jne CheckGameOver
-                mov estado_actual, ESTADO_PAUSA
-                jmp FinLogica
-                CheckGameOver :
+            jne CheckGameOver
+            mov estado_actual, ESTADO_PAUSA
+            jmp FinLogica
+            CheckGameOver:
             cmp vidas, 0
-                jg FinLogica
-                mov estado_actual, ESTADO_GAMEOVER
-                jmp FinLogica
-                LogicaPausa :
+            jg FinLogica
+            mov estado_actual, ESTADO_GAMEOVER
+            jmp FinLogica
+            LogicaPausa:
             cmp input_enter, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_JUGANDO
-                jmp FinLogica
-                LogicaGameOver :
+            jne FinLogica
+            mov estado_actual, ESTADO_JUGANDO
+            jmp FinLogica
+            LogicaGameOver:
             cmp input_enter, 1
-                jne CheckExitGO
-                mov estado_actual, ESTADO_INPUT_NOMBRE
-                jmp FinLogica
-                CheckExitGO :
+            jne CheckExitGO
+            mov estado_actual, ESTADO_INPUT_NOMBRE
+            jmp FinLogica
+            CheckExitGO:
             cmp input_esc, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_MENU
-                mov vidas, 3
-                mov puntaje, 0
-                jmp FinLogica
-                LogicaInput :
+            jne FinLogica
+            mov estado_actual, ESTADO_MENU
+            mov vidas, 3
+            mov puntaje, 0
+            mov nivelActual, 1
+            jmp FinLogica
+            LogicaInput:
             cmp input_enter, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_MEJORES
-                jmp FinLogica
-                LogicaMejores :
+            jne FinLogica
+            mov estado_actual, ESTADO_MEJORES
+            jmp FinLogica
+            LogicaMejores:
             cmp input_esc, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_MENU
-                mov vidas, 3
-                mov puntaje, 0
-                jmp FinLogica
-                LogicaCreditos :
+            jne FinLogica
+            mov estado_actual, ESTADO_MENU
+            mov vidas, 3
+            mov puntaje, 0
+            mov nivelActual, 1
+            jmp FinLogica
+            LogicaCreditos:
             cmp input_esc, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_MENU
-                jmp FinLogica
-                LogicaVictoria :
+            jne FinLogica
+            mov estado_actual, ESTADO_MENU
+            jmp FinLogica
+            LogicaVictoria:
             cmp input_enter, 1
-                jne CheckExitWin
-                mov estado_actual, ESTADO_INPUT_NOMBRE
-                jmp FinLogica
-                CheckExitWin :
+            jne CheckExitWin
+            mov estado_actual, ESTADO_INPUT_NOMBRE
+            jmp FinLogica
+            CheckExitWin:
             cmp input_esc, 1
-                jne FinLogica
-                mov estado_actual, ESTADO_MENU
-                mov vidas, 3
-                mov puntaje, 0
-                FinLogica :
+            jne FinLogica
+            mov estado_actual, ESTADO_MENU
+            mov vidas, 3
+            mov puntaje, 0
+            mov nivelActual, 1
+            jmp FinLogica
+            LogicaAjustes:
+            cmp input_esc, 1
+            jne FinLogica
+            mov estado_actual, ESTADO_MENU
+            FinLogica:
         }
 
         if (estado_actual == ESTADO_MEJORES && input_enter) {
@@ -350,10 +553,13 @@ int main(int argc, char* argv[]) {
         if (estado_actual == ESTADO_INPUT_NOMBRE && !SDL_TextInputActive(ventana)) SDL_StartTextInput(ventana);
 
         if (estado_actual == ESTADO_MENU && input_esc) {
-            pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
-            vel_y = -VEL_PELOTA_BASE;
-            vel_x = (rand() % 2 == 0) ? VEL_PELOTA_BASE : -VEL_PELOTA_BASE;
-            nivelActual = 1;
+            pelota.x = (float)ANCHO_VENTANA / 2.0f; pelota.y = (float)ALTO_VENTANA / 2.0f;
+            paddle.w = PADDLE_ANCHO;
+            paddle.x = ((float)ANCHO_VENTANA - PADDLE_ANCHO) / 2.0f;
+
+            float v = CalcularVelocidad(nivelActual);
+            vel_x = (rand() % 2 == 0) ? v : -v;
+            vel_y = -v;
             proximaVida = PUNTAJE_VIDA_EXTRA;
             CargarNivel(ladrillos, nivelActual);
         }
@@ -372,13 +578,13 @@ int main(int argc, char* argv[]) {
                     je MoverDer
                     fsub temp_pv
                     jmp FinPaddle
-                    MoverDer : fadd temp_pv
-                    FinPaddle : fstp temp_px
+                    MoverDer: fadd temp_pv
+                    FinPaddle: fstp temp_px
                 }
                 paddle.x = temp_px;
             }
             if (paddle.x < 0) paddle.x = 0;
-            if (paddle.x + paddle.w > ANCHO_VENTANA) paddle.x = ANCHO_VENTANA - paddle.w;
+            if (paddle.x + paddle.w > ANCHO_VENTANA) paddle.x = (float)ANCHO_VENTANA - paddle.w;
 
             __asm {
                 fld pelota.x
@@ -390,7 +596,7 @@ int main(int argc, char* argv[]) {
             }
 
             float ball_r = pelota.x + PELOTA_TAM; float ball_b = pelota.y + PELOTA_TAM;
-            float pad_r = paddle.x + PADDLE_ANCHO; float pad_b = paddle.y + PADDLE_ALTO;
+            float pad_r = paddle.x + paddle.w; float pad_b = paddle.y + PADDLE_ALTO;
 
             if (ball_r >= paddle.x && pelota.x <= pad_r && ball_b >= paddle.y && pelota.y <= pad_b) {
                 float perturbacion = ((float)(rand() % 300) / 100.0f) - 1.5f;
@@ -428,11 +634,11 @@ int main(int argc, char* argv[]) {
                             jg TopeVidas
                             mov vidas, ebx
                             jmp ActMeta
-                            TopeVidas :
+                            TopeVidas:
                             mov vidas, MAX_VIDAS
-                                ActMeta :
+                            ActMeta:
                             add proximaVida, PUNTAJE_VIDA_EXTRA
-                                NoVidaExtra :
+                            NoVidaExtra:
                         }
 
                         if (ladrillosRestantes <= 0) {
@@ -442,9 +648,8 @@ int main(int argc, char* argv[]) {
                             }
                             else {
                                 CargarNivel(ladrillos, nivelActual);
-                                pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
-                                float factor = 1.0f + ((float)nivelActual * 0.15f);
-                                float nuevaVel = VEL_PELOTA_BASE * factor;
+                                pelota.x = (float)ANCHO_VENTANA / 2.0f; pelota.y = (float)ALTO_VENTANA / 2.0f;
+                                float nuevaVel = CalcularVelocidad(nivelActual);
                                 vel_x = (rand() % 2 == 0) ? nuevaVel : -nuevaVel;
                                 vel_y = -nuevaVel;
                                 SDL_Delay(500);
@@ -458,8 +663,8 @@ int main(int argc, char* argv[]) {
             if (pelota.y <= 0) vel_y = -vel_y;
             if (pelota.y > ALTO_VENTANA) {
                 vidas--;
-                pelota.x = ANCHO_VENTANA / 2; pelota.y = ALTO_VENTANA / 2;
-                float velActual = VEL_PELOTA_BASE * (1.0f + ((float)nivelActual * 0.1f));
+                pelota.x = (float)ANCHO_VENTANA / 2.0f; pelota.y = (float)ALTO_VENTANA / 2.0f;
+                float velActual = CalcularVelocidad(nivelActual);
                 vel_y = -velActual;
                 vel_x = (rand() % 2 == 0) ? velActual : -velActual;
                 SDL_Delay(500);
@@ -495,7 +700,7 @@ int main(int argc, char* argv[]) {
             char bufNivel[20]; sprintf_s(bufNivel, 20, "NIVEL: %d", nivelActual);
             DibujarTextoCentrado(renderer, fontRetro, bufNivel, 60, colorAmarillo);
 
-            for (int i = 0; i < vidas; i++) DibujarCorazon(renderer, ANCHO_VENTANA - 60.0f - ((float)i * 50.0f), 25.0f, 1.5f);
+            for (int i = 0; i < vidas; i++) DibujarCorazon(renderer, (float)ANCHO_VENTANA - 60.0f - ((float)i * 50.0f), 25.0f, 1.5f);
         }
 
         if (estado_actual == ESTADO_MENU) {
@@ -504,8 +709,9 @@ int main(int argc, char* argv[]) {
             DibujarTextoCentrado(renderer, fontTitulo, "BREAKOUT", 150, colorBlanco);
             DibujarTextoCentrado(renderer, fontRetro, "JUGAR (ENTER)", 400, colorBlanco);
             DibujarTextoCentrado(renderer, fontRetro, "MEJORES PUNTUACIONES (TAB)", 500, colorAmarillo);
-            DibujarTextoCentrado(renderer, fontRetro, "CREDITOS (C)", 600, colorAmarillo);
-            DibujarTextoCentrado(renderer, fontRetro, "SALIR (ESC)", 700, colorBlanco);
+            DibujarTextoCentrado(renderer, fontRetro, "AJUSTES (A)", 600, colorAmarillo);
+            DibujarTextoCentrado(renderer, fontRetro, "CREDITOS (C)", 700, colorAmarillo);
+            DibujarTextoCentrado(renderer, fontRetro, "SALIR (ESC)", 800, colorBlanco);
         }
         else if (estado_actual == ESTADO_PAUSA) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
@@ -535,7 +741,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderClear(renderer);
             DibujarTextoCentrado(renderer, fontTitulo, "NUEVO RECORD!", 150, colorAmarillo);
             DibujarTextoCentrado(renderer, fontRetro, "Escribe tu nombre y da ENTER:", 350, colorBlanco);
-            SDL_FRect linea = { ANCHO_VENTANA / 2 - 200, 500, 400, 4 };
+            SDL_FRect linea = { (float)ANCHO_VENTANA / 2.0f - 200.0f, 500.0f, 400.0f, 4.0f };
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderFillRect(renderer, &linea);
             if (strlen(inputText) > 0) DibujarTextoCentrado(renderer, fontTitulo, inputText, 420, colorBlanco);
@@ -547,10 +753,33 @@ int main(int argc, char* argv[]) {
             DibujarTextoCentrado(renderer, fontTitulo, "HALL OF FAME", 50, colorAmarillo);
             for (int i = 0; i < MAX_SCORES; i++) {
                 char lineaScore[60];
-                sprintf_s(lineaScore, 60, "%d. %s   -   %05d", i + 1, mejoresPuntajes[i].nombre, mejoresPuntajes[i].puntaje);
+                sprintf_s(lineaScore, 60, "%d. %s    -    %05d", i + 1, mejoresPuntajes[i].nombre, mejoresPuntajes[i].puntaje);
                 SDL_Color c = (i == 0) ? colorAmarillo : colorBlanco;
                 DibujarTextoCentrado(renderer, fontRetro, lineaScore, 200 + (i * 55), c);
             }
+            DibujarTextoCentrado(renderer, fontRetro, "VOLVER (ESC)", 800, colorBlanco);
+        }
+        else if (estado_actual == ESTADO_AJUSTES) {
+            SDL_SetRenderDrawColor(renderer, 10, 15, 30, 255);
+            SDL_RenderClear(renderer);
+            DibujarTextoCentrado(renderer, fontTitulo, "AJUSTES", 100, colorAmarillo);
+
+            char buf[50];
+            SDL_Color cSelect = colorAmarillo;
+            SDL_Color cNormal = colorBlanco;
+
+            const char* difTextos[] = { "< FACIL >", "< NORMAL >", "< DIFICIL >" };
+            sprintf_s(buf, 50, "DIFICULTAD: %s", difTextos[dificultadIdx]);
+            DibujarTextoCentrado(renderer, fontRetro, buf, 300, (opcionAjustes == 0) ? cSelect : cNormal);
+
+            const char* velTextos[] = { "< LENTO >", "< NORMAL >", "< RAPIDO >" };
+            sprintf_s(buf, 50, "VEL. PADDLE: %s", velTextos[velPaddleIdx]);
+            DibujarTextoCentrado(renderer, fontRetro, buf, 400, (opcionAjustes == 1) ? cSelect : cNormal);
+
+            sprintf_s(buf, 50, "NIVEL INICIAL: < %d >", nivelActual);
+            DibujarTextoCentrado(renderer, fontRetro, buf, 500, (opcionAjustes == 2) ? cSelect : cNormal);
+
+            DibujarTextoCentrado(renderer, fontCreditos, "Usa FLECHAS para cambiar", 700, colorArduino);
             DibujarTextoCentrado(renderer, fontRetro, "VOLVER (ESC)", 800, colorBlanco);
         }
         else if (estado_actual == ESTADO_CREDITOS) {
