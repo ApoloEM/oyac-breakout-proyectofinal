@@ -383,7 +383,7 @@
     
     \section{Conclusiones}
     
-    Al finalizar este proyecto, pudimos comprobar que es totalmente viable mezclar un lenguaje moderno como C con uno de bajo nivel como Ensamblador para crear una aplicación real y divertida. Lo más importante que encontramos fue que, si dividimos el trabajo correctamente (dejando que C se encargue de "pintar" la ventana y que Ensamblador se encargue de "pensar" la lógica), el programa funciona de manera fluida y eficiente.
+    Al finalizar este proyecto, pudimos comprobar que es totalmente viable mezclar un lenguaje moderno como C con uno de bajo nivel como Ensamblador para crear una aplicación real y divertida. Lo más importante que encontramos fue que, si dividimos el trabajo correctamente (dejando que C se encargue de "pintar" la ventana y que Ensamblador se encargue de "pensar" la lógica), el programa funciona de manera fluida y eficiente.\\
     
     En relación con los objetivos que nos planteamos al inicio, logramos lo siguiente:
     \begin{itemize}
@@ -391,9 +391,9 @@
         \item \textbf{Manejo de Memoria:} Al programar la carga de niveles, nos dimos cuenta de que las estructuras de datos (como los ladrillos) son solo bloques de bytes en la memoria RAM que podemos modificar usando desplazamientos (\textit{offsets}), tal como lo describe Tanenbaum en sus principios de organización \cite{tanenbaum}.
     \end{itemize}
     
-    Desde el punto de vista práctico, este experimento nos enseñó que el ensamblador sigue siendo una herramienta muy poderosa para optimizar partes críticas del código. Al eliminar las "capas extra" que ponen los lenguajes de alto nivel, tuvimos control total sobre la física de la pelota en cada cuadro del juego, algo que Irvine destaca como una de las mayores ventajas de programar a bajo nivel \cite{irvine}.
+    Desde el punto de vista práctico, este experimento nos enseñó que el ensamblador sigue siendo una herramienta muy poderosa para optimizar partes críticas del código. Al eliminar las "capas extra" que ponen los lenguajes de alto nivel, tuvimos control total sobre la física de la pelota en cada cuadro del juego, algo que Irvine destaca como una de las mayores ventajas de programar a bajo nivel \cite{irvine}.\\
     
-    Sin embargo, también nos enfrentamos a una limitante importante: el compilador de Visual Studio. Nos obligó a trabajar en modo de 32 bits (x86) porque no permite usar bloques de ensamblador en línea (\texttt{\_\_asm}) en arquitecturas modernas de 64 bits.
+    Sin embargo, también nos enfrentamos a una limitante importante: el compilador de Visual Studio. Nos obligó a trabajar en modo de 32 bits (x86) porque no permite usar bloques de ensamblador en línea (\texttt{\_\_asm}) en arquitecturas modernas de 64 bits.\\
     
     Para futuras investigaciones o si quisiéramos mejorar este proyecto, proponemos:
     \begin{itemize}
