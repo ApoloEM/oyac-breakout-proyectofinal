@@ -232,6 +232,96 @@
 		\item \textbf{Integridad de la pila FPU:} Fue necesario asegurar que cada instruccion de carga (\texttt{FLD}) tuviera su correspondiente descarga (\texttt{FSTP}) para evitar el desbordamiento de la pila de registros flotantes.
 		\item \textbf{Alineacion de memoria:} Se verifico que los desplazamientos (\textit{offsets}) utilizados en ensamblador coincidieran exactamente con el tamaño de los tipos de datos en C para evitar la corrupcion de la informacion en las estructuras.
 	\end{itemize}
+
+    \subsection{Implementación Técnica y Fragmentos de Código}
+
+    A continuación, se presentan fragmentos clave del código fuente que ilustran la solución a los desafíos técnicos planteados, acompañados de comentarios descriptivos sobre la lógica de ensamblador utilizada.
+
+    \subsubsection{Cálculo de Física con FPU}
+    Uno de los retos principales fue calcular la velocidad de la pelota utilizando números de punto flotante. En lugar de usar la ALU estándar, se utilizó la pila de la FPU. El siguiente código muestra cómo se carga la velocidad base, se multiplica por un factor de dificultad y se devuelve el resultado.
+
+    \begin{lstlisting}[language=C, caption=Cálculo de velocidad utilizando la pila FPU]
+    float CalcularVelocidad(int nivel) {
+        float res = 0.0f;
+        // ... declaraciones de variables ...
+        __asm {
+            fld VEL_PELOTA_BASE   ; Carga la velocidad base en ST(0)
+            fld factor            ; Carga 0.1 en ST(0), base sube a ST(1)
+            fild n_menos_1        ; Carga nivel (entero) y convierte a float
+            
+            fmulp ST(1), ST(0)    ; Multiplica (nivel * factor)
+            fadd uno              ; Suma 1.0 al resultado
+            
+            fmulp ST(1), ST(0)    ; Multiplica resultado por VEL_PELOTA_BASE
+            fstp res              ; Extrae de la pila y guarda en variable C
+        }
+        return res;
+    }
+    \end{lstlisting}
+
+    \subsubsection{Manipulación de Memoria y Arreglos}
+    Para la carga de niveles, fue necesario iterar sobre una matriz lógica y traducir esos índices a coordenadas de pantalla. Este segmento demuestra el uso de \textbf{direccionamiento indirecto} para escribir en los miembros de la estructura \texttt{Ladrillo} (\texttt{rect.x}, \texttt{rect.y}) calculando los desplazamientos manualmente.
+
+    \begin{lstlisting}[language=C, caption=Posicionamiento de ladrillos mediante offsets]
+    // Dentro del ciclo de carga:
+    __asm {
+        // Cálculo de coordenada X: (columna * ancho) + offset
+        fld LADRILLO_ANCHO
+        fadd LADRILLO_ESPACIO
+        mov temp_int, edx      ; EDX contiene el indice de columna
+        fild temp_int          ; Convierte indice a float
+        fmulp ST(1), ST(0)     ; Multiplica
+        fadd LADRILLO_OFFSET_X ; Suma margen inicial
+        fstp [esi]             ; Guarda en [ESI + 0] (miembro rect.x)
+
+        // ... Calculo similar para Y ...
+
+        // Asignación de propiedades directas en memoria
+        mov eax, 1             ; Valor 'true'
+        mov byte ptr [esi + 16], 1 ; Activa el ladrillo (offset 16 = bool activo)
+        
+        // Avanzar al siguiente ladrillo en el arreglo
+        add esi, 32            ; Suma 32 bytes (tamaño de struct Ladrillo)
+                            ; para apuntar al siguiente elemento
+    }
+    \end{lstlisting}
+
+    \subsubsection{Algoritmo de Ordenamiento Burbuja}
+    Para cumplir con el requisito de algoritmos clásicos, se implementó el ordenamiento de puntajes manipulando directamente los punteros de la estructura \texttt{Jugador}. Se observa la comparación de valores en memoria y el intercambio (\textit{swap}) manual de datos.
+
+    \begin{lstlisting}[language=C, caption=Ordenamiento Burbuja en Ensamblador]
+    LoopInterno:
+        // Comparar puntaje actual con el siguiente
+        // Offset 16 = miembro 'puntaje'
+        mov eax, [edi + 16]         ; Carga puntaje de Jugador A
+        mov edx, [edi + 20 + 16]    ; Carga puntaje de Jugador B (siguiente)
+        
+        cmp eax, edx                ; Compara A vs B
+        jge NoSwap                  ; Si A >= B, no hacer nada
+
+        // Si A < B, realizar SWAP (intercambio)
+        // Intercambio de puntajes
+        mov [edi + 16], edx
+        mov [edi + 20 + 16], eax
+        
+        // Intercambio de nombres (4 bytes por ciclo debido al tamaño del char[])
+        mov eax, [edi]; mov edx, [edi + 20]; 
+        mov [edi], edx; mov [edi + 20], eax
+        // ... continua intercambio del resto del nombre ...
+
+    NoSwap:
+        add edi, 20                 ; Avanzar puntero al siguiente Jugador
+        dec ebx
+        jnz LoopInterno
+    \end{lstlisting}
+
+    \subsection{Repositorio de Código Fuente}
+
+    El código fuente completo se encuentra disponible públicamente en el siguiente repositorio de GitHub:
+
+    \begin{center}
+        \url{https://github.com/ducklingTenderOuO/OyAC-Breakout-ProyectoFinal.git}
+    \end{center}
 	
 	\section{Resultados con pruebas}
 	\begin{itemize}
