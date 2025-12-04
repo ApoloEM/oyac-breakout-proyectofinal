@@ -54,7 +54,7 @@ cmake_install.cmake
 install_manifest.txt
 # SDL build artifacts
 *.bmp
-*.png
+# (allow PNG assets)
 # OS files
 .DS_Store
 Thumbs.db
