@@ -60,3 +60,15 @@ install_manifest.txt
 Thumbs.db
 # App data
 scores.dat
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.fdb_latexmk
+*.fls
+*.toc
+*.out
+*.dvi
+*.synctex.gz
+*.synctex(busy)
+
