@@ -186,6 +186,69 @@ La FPU es un coprocesador dedicado a realizar operaciones con números reales (d
     \end{itemize}
 \end{itemize}
 
+\section{Procedimiento}
+
+El desarrollo del proyecto se llevó a cabo siguiendo una metodología estructurada de ingeniería de software, dividida en fases de configuración, implementación, integración y pruebas. A continuación, se detallan los recursos utilizados y los pasos ejecutados.
+
+\subsection{Materiales y Equipos}
+Para la realización de esta práctica se utilizaron los siguientes recursos:
+\begin{itemize}
+    \item \textbf{Hardware:} Computadora personal con arquitectura de procesador x64 (Intel/AMD).
+    \item \textbf{Entorno de Desarrollo Integrado (IDE):} Microsoft Visual Studio 2022.
+    \item \textbf{Lenguajes de Programación:} Lenguaje C para la estructura general y Ensamblador MASM x86 para la lógica de bajo nivel.
+    \item \textbf{Librerías Externas:} SDL3 (Simple DirectMedia Layer) y SDL3\_ttf para la gestión gráfica.
+\end{itemize}
+
+\subsection{Condiciones Experimentales y Configuración}
+Aunque el equipo de cómputo opera bajo una arquitectura de 64 bits, se estableció una condición de compilación específica debido a las restricciones del compilador de Microsoft:
+\begin{itemize}
+    \item \textbf{Modo de Depuración x86:} Dado que Visual Studio no soporta bloques de ensamblador en línea (\texttt{\_\_asm}) para la plataforma x64, fue obligatorio configurar el proyecto para compilar y depurar en modo \textbf{x86 (32 bits)}. Esto permitió el acceso directo a los registros extendidos de 32 bits (\texttt{EAX}, \texttt{EBX}, etc.) y la correcta integración del código máquina con el código C.
+    \item \textbf{Vinculación (Linking):} Se configuraron las dependencias del proyecto para enlazar estrictamente con las versiones x86 de las librerías SDL3, asegurando la compatibilidad binaria.
+\end{itemize}
+
+\subsection{Descripción Detallada del Procedimiento}
+
+\begin{enumerate}
+    \item \textbf{Configuración del Entorno Gráfico:} 
+    Se inició creando la estructura base en C. Se inicializó la librería SDL3 y se creó una ventana de resolución lógica de 1400x900 píxeles. Se implementó el bucle principal del juego (\textit{Game Loop}) encargado de limpiar la pantalla, procesar eventos y renderizar los cuadros por segundo.
+
+    \item \textbf{Definición de Estructuras de Datos:} 
+    Se diseñaron las estructuras (\texttt{struct}) en C para representar los objetos del juego: \texttt{Jugador} (para el nombre y puntaje) y \texttt{Ladrillo} (para posición, resistencia y estado). Esto definió el mapa de memoria que posteriormente sería manipulado por el ensamblador.
+
+    \item \textbf{Implementación de Lógica en Ensamblador:}
+    Se procedió a sustituir funciones críticas de C por bloques de ensamblador \textit{inline}:
+    \begin{itemize}
+        \item \textbf{Carga de Nivel:} Se escribió la rutina para recorrer la matriz de patrones y calcular la posición en memoria de cada ladrillo usando direccionamiento base más desplazamiento.
+        \item \textbf{Cálculo de Velocidad:} Se implementó la lógica matemática utilizando la FPU, cargando variables \texttt{float} en la pila \texttt{ST(0)}, operando sobre ellas y devolviendo el resultado a la variable de C.
+        \item \textbf{Ordenamiento:} Se codificó el algoritmo de burbuja para ordenar el arreglo de estructuras de jugadores, manipulando punteros de memoria directamente.
+    \end{itemize}
+
+    \item \textbf{Integración y Pruebas:}
+    Se integró la detección de colisiones y la física del juego. Se realizaron pruebas de ejecución paso a paso (debugging) inspeccionando los registros del CPU en tiempo real para asegurar que los punteros no accedieran a zonas de memoria inválidas y que la pila de la FPU se limpiara correctamente después de cada cálculo.
+\end{enumerate}
+
+\subsection{Precauciones de Seguridad y Manejo de Recursos}
+A nivel de software, se tomaron precauciones críticas para evitar errores de ejecución:
+\begin{itemize}
+    \item \textbf{Integridad de la Pila FPU:} Fue necesario asegurar que cada instrucción de carga (\texttt{FLD}) tuviera su correspondiente descarga (\texttt{FSTP}) para evitar el desbordamiento de la pila de registros flotantes.
+    \item \textbf{Alineación de Memoria:} Se verificó que los desplazamientos (\textit{offsets}) utilizados en ensamblador coincidieran exactamente con el tamaño de los tipos de datos en C para evitar la corrupción de la información en las estructuras.
+\end{itemize}
+
+\section{Resultados con pruebas}
+\begin{itemize}
+    \item Presentación de los datos obtenidos durante el experimento.
+    \item Tablas, gráficos, fotografías u otros recursos visuales que ayuden a interpretar los resultados.
+    \item Análisis de los datos, incluyendo cálculos si son necesarios.
+\end{itemize}
+
+\section{Conclusiones}
+\begin{itemize}
+    \item Recapitulación de los principales hallazgos del experimento.
+    \item Interpretación de los resultados en relación con los objetivos planteados.
+    \item Discusión de las implicaciones prácticas y teóricas de los resultados.
+    \item Posibles limitaciones del experimento y áreas para futuras investigaciones.
+\end{itemize}
+
 % -------------------------------------------------------------------------
 % REFERENCIAS
 % -------------------------------------------------------------------------
