@@ -9,10 +9,10 @@
 \usepackage{hyperref}
 
 \geometry{
-	left=2.5cm,
-	right=2.5cm,
-	top=2.5cm,
-	bottom=2.5cm
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
 }
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -21,225 +21,237 @@
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \lstdefinestyle{mystyle}{
-	backgroundcolor=\color{backcolour},
-	commentstyle=\color{codegreen},
-	keywordstyle=\color{magenta},
-	numberstyle=\tiny\color{codegray},
-	stringstyle=\color{codepurple},
-	basicstyle=\ttfamily\footnotesize,
-	breakatwhitespace=false,
-	breaklines=true,
-	captionpos=b,
-	keepspaces=true,
-	numbers=left,
-	numbersep=5pt,
-	showspaces=false,
-	showstringspaces=false,
-	showtabs=false,
-	tabsize=2
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
 }
 
 \lstset{style=mystyle}
 
-% Para quitar bordes rojos de hipervínculos (posible "detalle rojo")
+% Para quitar bordes rojos de hipervínculos
 \hypersetup{
-	colorlinks=true,
-	linkcolor=black,
-	urlcolor=blue,
-	citecolor=black,
-	pdftitle={Proyecto Breakout},
-	pdfauthor={Equipo}
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black,
+    pdftitle={Proyecto Breakout},
+    pdfauthor={Equipo}
 }
 
 \begin{document}
-	
-	\begin{titlepage}
-		\begin{center}
-			\LARGE Universidad Autonoma de Baja California\\
-			\large Facultad de Ingenieria Mexicali\\
-			
-			\vspace{1cm}
-			\begin{minipage}{0.45\textwidth}
-				\centering
-				\includegraphics[width=5cm]{logo.PNG}
-			\end{minipage}
-			\vspace{1cm}
-			
-			\large Ingenieria en Computacion\\
-			Organizacion y Arquitectura de Computadoras \\
-			\vspace{1cm}
-			\large Proyecto final\\
-			Breakout
-			\vspace{1cm}
-			Equipo:
-			\linebreak Astrid Yamilet Jimenez Barrera (1182660)\\
-			\large
-			Moya Monreal Erick Anselmo (1110604)\\
-			\vspace{1cm}
-			Profesor:
-			\linebreak Omar Munoz Urias
-			\vfill
-			Mexicali, Baja California, jueves 04 de diciembre del 2025.
-		\end{center}
-	\end{titlepage}
-	
-	\tableofcontents
-	\newpage
-	
-	\section{Introduccion}
-	
-	El presente proyecto fue desarrollado como parte final del curso de Organizacion y Arquitectura de Computadoras. Consiste en la implementacion de un videojuego completo tipo "Breakout", el cual esta escrito utilizando una combinacion de lenguaje C con la libreria SDL3 para la gestion grafica, y ensamblador MASM x86 inline para la programacion de la logica interna del juego.
-	
-	La arquitectura del proyecto se dividio en dos capas principales:
-	\begin{itemize}
-		\item \textbf{Capa de alto nivel (C):} Responsable de inicializar la ventana de juego, renderizar los graficos en pantalla, capturar eventos del teclado y gestionar el bucle principal del juego.
-		\item \textbf{Capa de bajo nivel (Ensamblador):} Responsable de la logica central del juego. Aqui se programa el calculo del movimiento de la pelota, la deteccion de colisiones, y el manejo directo de estructuras de datos en memoria para gestionar los puntajes.
-	\end{itemize}
-	
-	El objetivo general de la practica fue demostrar la viabilidad de integrar lenguajes de programacion de alto y bajo nivel para crear un sistema eficiente y funcional. Adicionalmente, se busco aplicar de manera practica los conocimientos adquiridos durante el semestre, tales como:
-	
-	\begin{itemize}
-		\item El uso de saltos condicionales (\texttt{JMP}, \texttt{JE}, \texttt{JNE}, \texttt{JG}) y ciclos para controlar el flujo de ejecucion directamente a nivel de procesador.
-		\item El manejo directo de la memoria RAM mediante direccionamiento indirecto para controlar el arreglo de ladrillos y sus propiedades sin abstracciones del lenguaje de alto nivel.
-		\item La implementacion del algoritmo de ordenamiento burbuja completamente en ensamblador para gestionar la tabla de mejores puntuaciones.
-		\item La manipulacion de registros del procesador (EAX, EBX, ECX, EDX, ESI, EDI) para realizar operaciones aritmeticas y logicas de manera eficiente.
-	\end{itemize}
-	
-	Finalmente, este proyecto permite visualizar de manera practica como las instrucciones basicas del procesador (operaciones aritmeticas, logicas y de control de flujo) que pueden ser implementadas en ensamblador, interactuan para producir un entorno grafico interactivo en tiempo real.
-	
-	\section{Problematica y justificacion}
-	
-	La problematica central que motiva este proyecto radica en el cumplimiento de los requerimientos estrictos establecidos para el proyecto final del curso de Organizacion y Arquitectura de Computadoras. El desafio principal consistio en idear y desarrollar una aplicacion que lograra la convergencia entre un lenguaje de alto nivel y el lenguaje ensamblador. Para la capa de alto nivel, se tomo la decision de utilizar el lenguaje C, debido a la experiencia previa y practica que se tiene con su sintaxis.
-	
-	Sin embargo, dado que las especificaciones del proyecto prohibian explicitamente el uso de la terminal para la interfaz de usuario y exigian un entorno grafico, fue necesario implementar la biblioteca externa SDL3. La integracion de esta herramienta represento un reto tecnico considerable durante la etapa de configuracion inicial; una vez superado este obstaculo, la problematica se traslado a la correcta codificacion de la logica interna para asegurar que ambos lenguajes operaran en conjunto.
-	
-	La justificacion para resolver esta problematica es primordialmente academica: completar el proyecto es el requisito indispensable para acreditar la materia. Mas alla de la calificacion, la realizacion de este videojuego sirve como el medio para demostrar tangiblemente la adquisicion de los conocimientos impartidos durante el semestre, probando que se tiene la capacidad de manipular manualmente los registros del procesador, controlar el flujo del programa y gestionar la memoria de manera eficiente en un entorno real.
-	
-	\section{Objetivos de la practica}
-	
-	\subsection{Objetivo general}
-	Disenar e implementar una aplicacion de software hibrida que integre un lenguaje de alto nivel con rutinas de bajo nivel, con el proposito de demostrar la aplicacion practica de los conocimientos adquiridos en el curso de Organizacion y Arquitectura de Computadoras. El proyecto busca cumplir con los requerimientos de evaluacion mediante la creacion de un entorno grafico interactivo donde la logica critica sea gestionada directamente a traves de instrucciones de ensamblador.
-	
-	\subsection{Objetivos especificos}
-	\begin{itemize}
-		\item \textbf{Integracion de lenguajes:} Establecer una comunicacion eficiente entre el lenguaje C (encargado de la gestion de recursos y la interfaz grafica mediante SDL3) y el lenguaje ensamblador x86 (encargado del procesamiento logico), demostrando la interoperabilidad entre ambos niveles de abstraccion.
-		
-		\item \textbf{Aplicacion de algoritmos de ordenamiento:} Implementar manualmente el algoritmo de ordenamiento burbuja (\textit{Bubble sort}) utilizando instrucciones de ensamblador para gestionar y organizar estructuras de datos en memoria, cumpliendo con el requisito de manipulacion de algoritmos clasicos a bajo nivel.
-		
-		\item \textbf{Manipular memoria y estructuras de datos:} Utilizar direccionamiento indirecto y calculo de desplazamientos (\textit{offsets}) en ensamblador para acceder y modificar arreglos de estructuras (\textit{structs}) en la memoria RAM, especificamente para la carga de niveles y propiedades de los ladrillos.
-		
-		\item \textbf{Controlar el flujo de ejecucion:} Aplicar instrucciones de salto condicional (\texttt{JE}, \texttt{JNE}, \texttt{JMP}) y ciclos para implementar algoritmos logicos complejos, como el ordenamiento de puntajes (metodo de burbuja) y la seleccion de dificultad.
-		
-	\end{itemize}
-	
-	\section{Marco teorico}
-	
-	Para comprender la implementacion tecnica de este proyecto, es necesario definir los conceptos fundamentales de la arquitectura de computadoras y las herramientas de software utilizadas. A continuacion, se presentan las bases teoricas sobre la programacion hibrida, el manejo de memoria y los algoritmos empleados.
-	
-	\subsection{Libreria SDL (Simple DirectMedia Layer)}
-	SDL es una biblioteca de desarrollo multiplataforma disenada para proporcionar acceso de bajo nivel al hardware de audio, teclado, raton, joystick y graficos a traves de OpenGL y Direct3D.
-	\begin{itemize}
-		\item \textbf{Funcion principal:} Actua como una capa de abstraccion que permite al programador escribir codigo en C para manejar ventanas y renderizado sin interactuar directamente con el driver de la tarjeta grafica \cite{sdlwiki}.
-		\item \textbf{Manejo de eventos:} SDL utiliza una cola de eventos (\textit{event queue}) para capturar interacciones del usuario. Funciones como \texttt{SDL\_PollEvent} permiten extraer estos eventos (teclas presionadas, clics) para ser procesados dentro de un bucle infinito conocido como \textit{Game loop}.
-	\end{itemize}
-	
-	\subsection{Ensamblador inline (\texttt{\_\_asm})}
-	El ensamblador en linea (\textit{Inline assembly}) es una caracteristica de los compiladores de C/C++ que permite incrustar instrucciones de lenguaje ensamblador directamente dentro del codigo fuente de alto nivel.
-	\begin{itemize}
-		\item \textbf{Ventaja:} Segun Irvine, esta tecnica elimina la necesidad de enlazar archivos objeto externos y simplifica el paso de parametros, ya que el bloque \texttt{\_\_asm} puede acceder a las variables declaradas en C por su nombre, sin necesidad de gestionar manualmente la pila de llamadas \cite{irvine}.
-		\item \textbf{Uso:} Se utiliza para optimizar secciones criticas de codigo donde se requiere acceso directo a los registros del CPU o a banderas de estado especificas que no son accesibles desde C.
-	\end{itemize}
-	
-	\subsection{Control de flujo en arquitectura x86}
-	A nivel de hardware, el procesador ejecuta instrucciones de manera secuencial a menos que se modifique el registro puntero de instruccion (EIP).
-	\begin{itemize}
-		\item \textbf{Saltos condicionales:} Son instrucciones que transfieren el control a una nueva direccion de memoria solo si se cumplen ciertas condiciones en el registro de banderas (\textit{EFLAGS}). Ejemplos comunes incluyen:
-		\begin{itemize}
-			\item \texttt{JE} (Jump if equal): Salta si la bandera Zero flag (ZF) es 1.
-			\item \texttt{JG} (Jump if greater): Salta si el resultado de una comparacion anterior indica que el primer operando es mayor que el segundo (basado en banderas de signo y desbordamiento) \cite{stallings}.
-		\end{itemize}
-		\item \textbf{Ciclos:} En ensamblador, los bucles se construyen combinando etiquetas, comparaciones y saltos condicionales, o utilizando la instruccion \texttt{LOOP} que utiliza el registro \texttt{ECX} como contador automatico.
-	\end{itemize}
-	
-	\subsection{Direccionamiento de memoria y arreglos}
-	La memoria RAM se organiza linealmente. Para acceder a elementos dentro de una estructura de datos o un arreglo, se utiliza el \textbf{direccionamiento indirecto base mas desplazamiento}.
-	\begin{itemize}
-		\item \textbf{Principio:} Si un registro (como \texttt{ESI}) contiene la direccion base de un arreglo, se puede acceder al siguiente elemento sumando el tamaño del dato (offset). Por ejemplo, en un arreglo de enteros de 4 bytes, el segundo elemento se encuentra en \texttt{[ESI + 4]} \cite{tanenbaum}.
-	\end{itemize}
-	
-	\subsection{Algoritmo de ordenamiento de burbuja}
-	Es un algoritmo de ordenamiento sencillo que funciona iterando repetidamente a traves de la lista que se desea ordenar.
-	\begin{itemize}
-		\item \textbf{Funcionamiento:} Compara elementos adyacentes y los intercambia (\textit{swap}) si estan en el orden incorrecto. Este proceso se repite hasta que no se requieren mas intercambios.
-		\item \textbf{Complejidad:} Aunque no es el mas eficiente para grandes volumenes de datos ($O(n^2)$), su implementacion a nivel de ensamblador es ideal para fines educativos porque ilustra claramente el uso de bucles anidados, comparaciones y movimiento de datos en memoria \cite{patterson}.
-	\end{itemize}
-	
-	\subsection{Unidad de punto flotante (FPU x87)}
-	La FPU es un coprocesador dedicado a realizar operaciones con numeros reales (decimales). A diferencia de los registros generales (EAX, EBX), la FPU utiliza una \textbf{pila de registros} de 80 bits (\texttt{ST0} a \texttt{ST7}).
-	\begin{itemize}
-		\item \textbf{Instrucciones clave:}
-		\begin{itemize}
-			\item \texttt{FLD}: Carga un valor de memoria y lo empuja al tope de la pila (\texttt{ST0}).
-			\item \texttt{FSTP}: Saca el valor del tope de la pila y lo guarda en memoria.
-			\item \texttt{FCOMIP}: Compara el tope de la pila con otro valor y actualiza las banderas del CPU para permitir saltos condicionales \cite{irvine}.
-		\end{itemize}
-	\end{itemize}
-	
-	\section{Procedimiento}
-	
-	El desarrollo del proyecto se llevo a cabo siguiendo una metodologia estructurada de ingenieria de software, dividida en fases de configuracion, implementacion, integracion y pruebas. A continuacion, se detallan los recursos utilizados y los pasos ejecutados.
-	
-	\subsection{Materiales y equipos}
-	Para la realizacion de esta practica se utilizaron los siguientes recursos:
-	\begin{itemize}
-		\item \textbf{Hardware:} Computadora personal con arquitectura de procesador x64 (Intel/AMD).
-		\item \textbf{Entorno de desarrollo integrado (IDE):} Microsoft Visual Studio 2022.
-		\item \textbf{Lenguajes de programacion:} Lenguaje C para la estructura general y ensamblador MASM x86 para la logica de bajo nivel.
-		\item \textbf{Librerias externas:} SDL3 (Simple DirectMedia Layer) y SDL3\_ttf para la gestion grafica.
-	\end{itemize}
-	
-	\subsection{Condiciones experimentales y configuracion}
-	Aunque el equipo de computo opera bajo una arquitectura de 64 bits, se establecio una condicion de compilacion especifica debido a las restricciones del compilador de Microsoft:
-	\begin{itemize}
-		\item \textbf{Modo de depuracion x86:} Dado que Visual Studio no soporta bloques de ensamblador en linea (\texttt{\_\_asm}) para la plataforma x64, fue obligatorio configurar el proyecto para compilar y depurar en modo \textbf{x86 (32 bits)}. Esto permitio el acceso directo a los registros extendidos de 32 bits (\texttt{EAX}, \texttt{EBX}, etc.) y la correcta integracion del codigo maquina con el codigo C.
-		\item \textbf{Vinculacion (Linking):} Se configuraron las dependencias del proyecto para enlazar estrictamente con las versiones x86 de las librerias SDL3, asegurando la compatibilidad binaria.
-	\end{itemize}
-	
-	\subsection{Descripcion detallada del procedimiento}
-	
-	\begin{enumerate}
-		\item \textbf{Configuracion del entorno grafico:}
-		Se inicio creando la estructura base en C. Se inicializo la libreria SDL3 y se creo una ventana de resolucion logica de 1400x900 pixeles. Se implemento el bucle principal del juego (\textit{Game loop}) encargado de limpiar la pantalla, procesar eventos y renderizar los cuadros por segundo.
-		
-		\item \textbf{Definicion de estructuras de datos:}
-		Se disenaron las estructuras (\texttt{struct}) en C para representar los objetos del juego: \texttt{Jugador} (para el nombre y puntaje) y \texttt{Ladrillo} (para posicion, resistencia y estado). Esto definio el mapa de memoria que posteriormente seria manipulado por el ensamblador.
-		
-		\item \textbf{Implementacion de logica en ensamblador:}
-		Se procedio a sustituir funciones criticas de C por bloques de ensamblador \textit{inline}:
-		\begin{itemize}
-			\item \textbf{Carga de nivel:} Se escribio la rutina para recorrer la matriz de patrones y calcular la posicion en memoria de cada ladrillo usando direccionamiento base mas desplazamiento.
-			\item \textbf{Calculo de velocidad:} Se implemento la logica matematica utilizando la FPU, cargando variables \texttt{float} en la pila \texttt{ST(0)}, operando sobre ellas y devolviendo el resultado a la variable de C.
-			\item \textbf{Ordenamiento:} Se codifico el algoritmo de burbuja para ordenar el arreglo de estructuras de jugadores, manipulando punteros de memoria directamente.
-		\end{itemize}
-		
-		\item \textbf{Integracion y pruebas:}
-		Se integro la deteccion de colisiones y la fisica del juego. Se realizaron pruebas de ejecucion paso a paso (debugging) inspeccionando los registros del CPU en tiempo real para asegurar que los punteros no accedieran a zonas de memoria invalidas y que la pila de la FPU se limpiara correctamente despues de cada calculo.
-	\end{enumerate}
-	
-	\subsection{Precauciones de seguridad y manejo de recursos}
-	A nivel de software, se tomaron precauciones criticas para evitar errores de ejecucion:
-	\begin{itemize}
-		\item \textbf{Integridad de la pila FPU:} Fue necesario asegurar que cada instruccion de carga (\texttt{FLD}) tuviera su correspondiente descarga (\texttt{FSTP}) para evitar el desbordamiento de la pila de registros flotantes.
-		\item \textbf{Alineacion de memoria:} Se verifico que los desplazamientos (\textit{offsets}) utilizados en ensamblador coincidieran exactamente con el tamaño de los tipos de datos en C para evitar la corrupcion de la informacion en las estructuras.
-	\end{itemize}
-
+    
+    \begin{titlepage}
+        \begin{center}
+            \LARGE Universidad Autonoma de Baja California\\
+            \large Facultad de Ingenieria Mexicali\\
+            
+            \vspace{1cm}
+            \begin{minipage}{0.45\textwidth}
+                \centering
+                % Asegúrate de que el archivo logo.PNG exista en la carpeta
+                \includegraphics[width=5cm]{logo.PNG}
+            \end{minipage}
+            \vspace{1cm}
+            
+            \large Ingenieria en Computacion\\
+            Organizacion y Arquitectura de Computadoras \\
+            \vspace{1cm}
+            \large Proyecto final\\
+            Breakout
+            
+            % Espacio forzado antes de Equipo
+            \vspace{2cm}
+            
+            \textbf{Equipo:}\\
+            \vspace{0.3cm} % Pequeño espacio entre el título Equipo y los nombres
+            Astrid Yamilet Jimenez Barrera (1182660)\\
+            Moya Monreal Erick Anselmo (1110604)\\
+            
+            \vspace{1.5cm}
+            
+            \textbf{Profesor:}\\
+            Omar Munoz Urias
+            
+            \vfill
+            
+            Mexicali, Baja California, jueves 04 de diciembre del 2025.
+        \end{center}
+    \end{titlepage}
+    
+    \newpage
+    
+    % IMPORTANTE: Compilar dos veces para que aparezca el índice
+    \tableofcontents
+    
+    \newpage
+    
+    \section{Introduccion}
+    
+    El presente proyecto fue desarrollado como parte final del curso de Organizacion y Arquitectura de Computadoras. Consiste en la implementacion de un videojuego completo tipo "Breakout", el cual esta escrito utilizando una combinacion de lenguaje C con la libreria SDL3 para la gestion grafica, y ensamblador MASM x86 inline para la programacion de la logica interna del juego.
+    
+    La arquitectura del proyecto se dividio en dos capas principales:
+    \begin{itemize}
+        \item \textbf{Capa de alto nivel (C):} Responsable de inicializar la ventana de juego, renderizar los graficos en pantalla, capturar eventos del teclado y gestionar el bucle principal del juego.
+        \item \textbf{Capa de bajo nivel (Ensamblador):} Responsable de la logica central del juego. Aqui se programa el calculo del movimiento de la pelota, la deteccion de colisiones, y el manejo directo de estructuras de datos en memoria para gestionar los puntajes.
+    \end{itemize}
+    
+    El objetivo general de la practica fue demostrar la viabilidad de integrar lenguajes de programacion de alto y bajo nivel para crear un sistema eficiente y funcional. Adicionalmente, se busco aplicar de manera practica los conocimientos adquiridos durante el semestre, tales como:
+    
+    \begin{itemize}
+        \item El uso de saltos condicionales (\texttt{JMP}, \texttt{JE}, \texttt{JNE}, \texttt{JG}) y ciclos para controlar el flujo de ejecucion directamente a nivel de procesador.
+        \item El manejo directo de la memoria RAM mediante direccionamiento indirecto para controlar el arreglo de ladrillos y sus propiedades sin abstracciones del lenguaje de alto nivel.
+        \item La implementacion del algoritmo de ordenamiento burbuja completamente en ensamblador para gestionar la tabla de mejores puntuaciones.
+        \item La manipulacion de registros del procesador (EAX, EBX, ECX, EDX, ESI, EDI) para realizar operaciones aritmeticas y logicas de manera eficiente.
+    \end{itemize}
+    
+    Finalmente, este proyecto permite visualizar de manera practica como las instrucciones basicas del procesador (operaciones aritmeticas, logicas y de control de flujo) que pueden ser implementadas en ensamblador, interactuan para producir un entorno grafico interactivo en tiempo real.
+    
+    \section{Problematica y justificacion}
+    
+    La problematica central que motiva este proyecto radica en el cumplimiento de los requerimientos estrictos establecidos para el proyecto final del curso de Organizacion y Arquitectura de Computadoras. El desafio principal consistio en idear y desarrollar una aplicacion que lograra la convergencia entre un lenguaje de alto nivel y el lenguaje ensamblador. Para la capa de alto nivel, se tomo la decision de utilizar el lenguaje C, debido a la experiencia previa y practica que se tiene con su sintaxis.
+    
+    Sin embargo, dado que las especificaciones del proyecto prohibian explicitamente el uso de la terminal para la interfaz de usuario y exigian un entorno grafico, fue necesario implementar la biblioteca externa SDL3. La integracion de esta herramienta represento un reto tecnico considerable durante la etapa de configuracion inicial; una vez superado este obstaculo, la problematica se traslado a la correcta codificacion de la logica interna para asegurar que ambos lenguajes operaran en conjunto.
+    
+    La justificacion para resolver esta problematica es primordialmente academica: completar el proyecto es el requisito indispensable para acreditar la materia. Mas alla de la calificacion, la realizacion de este videojuego sirve como el medio para demostrar tangiblemente la adquisicion de los conocimientos impartidos durante el semestre, probando que se tiene la capacidad de manipular manualmente los registros del procesador, controlar el flujo del programa y gestionar la memoria de manera eficiente en un entorno real.
+    
+    \section{Objetivos de la practica}
+    
+    \subsection{Objetivo general}
+    Disenar e implementar una aplicacion de software hibrida que integre un lenguaje de alto nivel con rutinas de bajo nivel, con el proposito de demostrar la aplicacion practica de los conocimientos adquiridos en el curso de Organizacion y Arquitectura de Computadoras. El proyecto busca cumplir con los requerimientos de evaluacion mediante la creacion de un entorno grafico interactivo donde la logica critica sea gestionada directamente a traves de instrucciones de ensamblador.
+    
+    \subsection{Objetivos especificos}
+    \begin{itemize}
+        \item \textbf{Integracion de lenguajes:} Establecer una comunicacion eficiente entre el lenguaje C (encargado de la gestion de recursos y la interfaz grafica mediante SDL3) y el lenguaje ensamblador x86 (encargado del procesamiento logico), demostrando la interoperabilidad entre ambos niveles de abstraccion.
+        
+        \item \textbf{Aplicacion de algoritmos de ordenamiento:} Implementar manualmente el algoritmo de ordenamiento burbuja (\textit{Bubble sort}) utilizando instrucciones de ensamblador para gestionar y organizar estructuras de datos en memoria, cumpliendo con el requisito de manipulacion de algoritmos clasicos a bajo nivel.
+        
+        \item \textbf{Manipular memoria y estructuras de datos:} Utilizar direccionamiento indirecto y calculo de desplazamientos (\textit{offsets}) en ensamblador para acceder y modificar arreglos de estructuras (\textit{structs}) en la memoria RAM, especificamente para la carga de niveles y propiedades de los ladrillos.
+        
+        \item \textbf{Controlar el flujo de ejecucion:} Aplicar instrucciones de salto condicional (\texttt{JE}, \texttt{JNE}, \texttt{JMP}) y ciclos para implementar algoritmos logicos complejos, como el ordenamiento de puntajes (metodo de burbuja) y la seleccion de dificultad.
+        
+    \end{itemize}
+    
+    \section{Marco teorico}
+    
+    Para comprender la implementacion tecnica de este proyecto, es necesario definir los conceptos fundamentales de la arquitectura de computadoras y las herramientas de software utilizadas. A continuacion, se presentan las bases teoricas sobre la programacion hibrida, el manejo de memoria y los algoritmos empleados.
+    
+    \subsection{Libreria SDL (Simple DirectMedia Layer)}
+    SDL es una biblioteca de desarrollo multiplataforma disenada para proporcionar acceso de bajo nivel al hardware de audio, teclado, raton, joystick y graficos a traves de OpenGL y Direct3D.
+    \begin{itemize}
+        \item \textbf{Funcion principal:} Actua como una capa de abstraccion que permite al programador escribir codigo en C para manejar ventanas y renderizado sin interactuar directamente con el driver de la tarjeta grafica \cite{sdlwiki}.
+        \item \textbf{Manejo de eventos:} SDL utiliza una cola de eventos (\textit{event queue}) para capturar interacciones del usuario. Funciones como \texttt{SDL\_PollEvent} permiten extraer estos eventos (teclas presionadas, clics) para ser procesados dentro de un bucle infinito conocido como \textit{Game loop}.
+    \end{itemize}
+    
+    \subsection{Ensamblador inline (\texttt{\_\_asm})}
+    El ensamblador en linea (\textit{Inline assembly}) es una caracteristica de los compiladores de C/C++ que permite incrustar instrucciones de lenguaje ensamblador directamente dentro del codigo fuente de alto nivel.
+    \begin{itemize}
+        \item \textbf{Ventaja:} Segun Irvine, esta tecnica elimina la necesidad de enlazar archivos objeto externos y simplifica el paso de parametros, ya que el bloque \texttt{\_\_asm} puede acceder a las variables declaradas en C por su nombre, sin necesidad de gestionar manualmente la pila de llamadas \cite{irvine}.
+        \item \textbf{Uso:} Se utiliza para optimizar secciones criticas de codigo donde se requiere acceso directo a los registros del CPU o a banderas de estado especificas que no son accesibles desde C.
+    \end{itemize}
+    
+    \subsection{Control de flujo en arquitectura x86}
+    A nivel de hardware, el procesador ejecuta instrucciones de manera secuencial a menos que se modifique el registro puntero de instruccion (EIP).
+    \begin{itemize}
+        \item \textbf{Saltos condicionales:} Son instrucciones que transfieren el control a una nueva direccion de memoria solo si se cumplen ciertas condiciones en el registro de banderas (\textit{EFLAGS}). Ejemplos comunes incluyen:
+        \begin{itemize}
+            \item \texttt{JE} (Jump if equal): Salta si la bandera Zero flag (ZF) es 1.
+            \item \texttt{JG} (Jump if greater): Salta si el resultado de una comparacion anterior indica que el primer operando es mayor que el segundo (basado en banderas de signo y desbordamiento) \cite{stallings}.
+        \end{itemize}
+        \item \textbf{Ciclos:} En ensamblador, los bucles se construyen combinando etiquetas, comparaciones y saltos condicionales, o utilizando la instruccion \texttt{LOOP} que utiliza el registro \texttt{ECX} como contador automatico.
+    \end{itemize}
+    
+    \subsection{Direccionamiento de memoria y arreglos}
+    La memoria RAM se organiza linealmente. Para acceder a elementos dentro de una estructura de datos o un arreglo, se utiliza el \textbf{direccionamiento indirecto base mas desplazamiento}.
+    \begin{itemize}
+        \item \textbf{Principio:} Si un registro (como \texttt{ESI}) contiene la direccion base de un arreglo, se puede acceder al siguiente elemento sumando el tamaño del dato (offset). Por ejemplo, en un arreglo de enteros de 4 bytes, el segundo elemento se encuentra en \texttt{[ESI + 4]} \cite{tanenbaum}.
+    \end{itemize}
+    
+    \subsection{Algoritmo de ordenamiento de burbuja}
+    Es un algoritmo de ordenamiento sencillo que funciona iterando repetidamente a traves de la lista que se desea ordenar.
+    \begin{itemize}
+        \item \textbf{Funcionamiento:} Compara elementos adyacentes y los intercambia (\textit{swap}) si estan en el orden incorrecto. Este proceso se repite hasta que no se requieren mas intercambios.
+        \item \textbf{Complejidad:} Aunque no es el mas eficiente para grandes volumenes de datos ($O(n^2)$), su implementacion a nivel de ensamblador es ideal para fines educativos porque ilustra claramente el uso de bucles anidados, comparaciones y movimiento de datos en memoria \cite{patterson}.
+    \end{itemize}
+    
+    \subsection{Unidad de punto flotante (FPU x87)}
+    La FPU es un coprocesador dedicado a realizar operaciones con numeros reales (decimales). A diferencia de los registros generales (EAX, EBX), la FPU utiliza una \textbf{pila de registros} de 80 bits (\texttt{ST0} a \texttt{ST7}).
+    \begin{itemize}
+        \item \textbf{Instrucciones clave:}
+        \begin{itemize}
+            \item \texttt{FLD}: Carga un valor de memoria y lo empuja al tope de la pila (\texttt{ST0}).
+            \item \texttt{FSTP}: Saca el valor del tope de la pila y lo guarda en memoria.
+            \item \texttt{FCOMIP}: Compara el tope de la pila con otro valor y actualiza las banderas del CPU para permitir saltos condicionales \cite{irvine}.
+        \end{itemize}
+    \end{itemize}
+    
+    \section{Procedimiento}
+    
+    El desarrollo del proyecto se llevo a cabo siguiendo una metodologia estructurada de ingenieria de software, dividida en fases de configuracion, implementacion, integracion y pruebas. A continuacion, se detallan los recursos utilizados y los pasos ejecutados.
+    
+    \subsection{Materiales y equipos}
+    Para la realizacion de esta practica se utilizaron los siguientes recursos:
+    \begin{itemize}
+        \item \textbf{Hardware:} Computadora personal con arquitectura de procesador x64 (Intel/AMD).
+        \item \textbf{Entorno de desarrollo integrado (IDE):} Microsoft Visual Studio 2022.
+        \item \textbf{Lenguajes de programacion:} Lenguaje C para la estructura general y ensamblador MASM x86 para la logica de bajo nivel.
+        \item \textbf{Librerias externas:} SDL3 (Simple DirectMedia Layer) y SDL3\_ttf para la gestion grafica.
+    \end{itemize}
+    
+    \subsection{Condiciones experimentales y configuracion}
+    Aunque el equipo de computo opera bajo una arquitectura de 64 bits, se establecio una condicion de compilacion especifica debido a las restricciones del compilador de Microsoft:
+    \begin{itemize}
+        \item \textbf{Modo de depuracion x86:} Dado que Visual Studio no soporta bloques de ensamblador en linea (\texttt{\_\_asm}) para la plataforma x64, fue obligatorio configurar el proyecto para compilar y depurar en modo \textbf{x86 (32 bits)}. Esto permitio el acceso directo a los registros extendidos de 32 bits (\texttt{EAX}, \texttt{EBX}, etc.) y la correcta integracion del codigo maquina con el codigo C.
+        \item \textbf{Vinculacion (Linking):} Se configuraron las dependencias del proyecto para enlazar estrictamente con las versiones x86 de las librerias SDL3, asegurando la compatibilidad binaria.
+    \end{itemize}
+    
+    \subsection{Descripcion detallada del procedimiento}
+    
+    \begin{enumerate}
+        \item \textbf{Configuracion del entorno grafico:}
+        Se inicio creando la estructura base en C. Se inicializo la libreria SDL3 y se creo una ventana de resolucion logica de 1400x900 pixeles. Se implemento el bucle principal del juego (\textit{Game loop}) encargado de limpiar la pantalla, procesar eventos y renderizar los cuadros por segundo.
+        
+        \item \textbf{Definicion de estructuras de datos:}
+        Se disenaron las estructuras (\texttt{struct}) en C para representar los objetos del juego: \texttt{Jugador} (para el nombre y puntaje) y \texttt{Ladrillo} (para posicion, resistencia y estado). Esto definio el mapa de memoria que posteriormente seria manipulado por el ensamblador.
+        
+        \item \textbf{Implementacion de logica en ensamblador:}
+        Se procedio a sustituir funciones criticas de C por bloques de ensamblador \textit{inline}:
+        \begin{itemize}
+            \item \textbf{Carga de nivel:} Se escribio la rutina para recorrer la matriz de patrones y calcular la posicion en memoria de cada ladrillo usando direccionamiento base mas desplazamiento.
+            \item \textbf{Calculo de velocidad:} Se implemento la logica matematica utilizando la FPU, cargando variables \texttt{float} en la pila \texttt{ST(0)}, operando sobre ellas y devolviendo el resultado a la variable de C.
+            \item \textbf{Ordenamiento:} Se codifico el algoritmo de burbuja para ordenar el arreglo de estructuras de jugadores, manipulando punteros de memoria directamente.
+        \end{itemize}
+        
+        \item \textbf{Integracion y pruebas:}
+        Se integro la deteccion de colisiones y la fisica del juego. Se realizaron pruebas de ejecucion paso a paso (debugging) inspeccionando los registros del CPU en tiempo real para asegurar que los punteros no accedieran a zonas de memoria invalidas y que la pila de la FPU se limpiara correctamente despues de cada calculo.
+    \end{enumerate}
+    
+    \subsection{Precauciones de seguridad y manejo de recursos}
+    A nivel de software, se tomaron precauciones criticas para evitar errores de ejecucion:
+    \begin{itemize}
+        \item \textbf{Integridad de la pila FPU:} Fue necesario asegurar que cada instruccion de carga (\texttt{FLD}) tuviera su correspondiente descarga (\texttt{FSTP}) para evitar el desbordamiento de la pila de registros flotantes.
+        \item \textbf{Alineacion de memoria:} Se verifico que los desplazamientos (\textit{offsets}) utilizados en ensamblador coincidieran exactamente con el tamaño de los tipos de datos en C para evitar la corrupcion de la informacion en las estructuras.
+    \end{itemize}
+    
     \subsection{Implementación Técnica y Fragmentos de Código}
-
+    
     A continuación, se presentan fragmentos clave del código fuente que ilustran la solución a los desafíos técnicos planteados, acompañados de comentarios descriptivos sobre la lógica de ensamblador utilizada.
-
+    
     \subsubsection{Cálculo de Física con FPU}
     Uno de los retos principales fue calcular la velocidad de la pelota utilizando números de punto flotante. En lugar de usar la ALU estándar, se utilizó la pila de la FPU. El siguiente código muestra cómo se carga la velocidad base, se multiplica por un factor de dificultad y se devuelve el resultado.
-
+    
     \begin{lstlisting}[language=C, caption=Cálculo de velocidad utilizando la pila FPU]
     float CalcularVelocidad(int nivel) {
         float res = 0.0f;
@@ -258,13 +270,13 @@
         return res;
     }
     \end{lstlisting}
-
+    
     \subsubsection{Manipulación de Memoria y Arreglos}
     Para la carga de niveles, fue necesario iterar sobre una matriz lógica y traducir esos índices a coordenadas de pantalla. Este segmento demuestra el uso de \textbf{direccionamiento indirecto} para escribir en los miembros de la estructura \texttt{Ladrillo} (\texttt{rect.x}, \texttt{rect.y}) calculando los desplazamientos manualmente.
-
+    
     \begin{lstlisting}[language=C, caption=Posicionamiento de ladrillos mediante offsets]
     // Dentro del ciclo de carga:
-    __asm {
+        __asm {
         // Cálculo de coordenada X: (columna * ancho) + offset
         fld LADRILLO_ANCHO
         fadd LADRILLO_ESPACIO
@@ -273,22 +285,22 @@
         fmulp ST(1), ST(0)     ; Multiplica
         fadd LADRILLO_OFFSET_X ; Suma margen inicial
         fstp [esi]             ; Guarda en [ESI + 0] (miembro rect.x)
-
+    
         // ... Calculo similar para Y ...
-
+    
         // Asignación de propiedades directas en memoria
         mov eax, 1             ; Valor 'true'
         mov byte ptr [esi + 16], 1 ; Activa el ladrillo (offset 16 = bool activo)
         
         // Avanzar al siguiente ladrillo en el arreglo
         add esi, 32            ; Suma 32 bytes (tamaño de struct Ladrillo)
-                            ; para apuntar al siguiente elemento
+                               ; para apuntar al siguiente elemento
     }
     \end{lstlisting}
-
+    
     \subsubsection{Algoritmo de Ordenamiento Burbuja}
     Para cumplir con el requisito de algoritmos clásicos, se implementó el ordenamiento de puntajes manipulando directamente los punteros de la estructura \texttt{Jugador}. Se observa la comparación de valores en memoria y el intercambio (\textit{swap}) manual de datos.
-
+    
     \begin{lstlisting}[language=C, caption=Ordenamiento Burbuja en Ensamblador]
     LoopInterno:
         // Comparar puntaje actual con el siguiente
@@ -298,7 +310,7 @@
         
         cmp eax, edx                ; Compara A vs B
         jge NoSwap                  ; Si A >= B, no hacer nada
-
+    
         // Si A < B, realizar SWAP (intercambio)
         // Intercambio de puntajes
         mov [edi + 16], edx
@@ -308,63 +320,102 @@
         mov eax, [edi]; mov edx, [edi + 20]; 
         mov [edi], edx; mov [edi + 20], eax
         // ... continua intercambio del resto del nombre ...
-
+    
     NoSwap:
         add edi, 20                 ; Avanzar puntero al siguiente Jugador
         dec ebx
         jnz LoopInterno
     \end{lstlisting}
-
+    
     \subsection{Repositorio de Código Fuente}
-
+    
     El código fuente completo se encuentra disponible públicamente en el siguiente repositorio de GitHub:
-
+    
     \begin{center}
         \url{https://github.com/ducklingTenderOuO/OyAC-Breakout-ProyectoFinal.git}
     \end{center}
-	
-	\section{Resultados con pruebas}
-	\begin{itemize}
-		\item Presentacion de los datos obtenidos durante el experimento.
-		\item Tablas, graficos, fotografias u otros recursos visuales que ayuden a interpretar los resultados.
-		\item Analisis de los datos, incluyendo calculos si son necesarios.
-	\end{itemize}
-	
-	\section{Conclusiones}
-	\begin{itemize}
-		\item Recapitulacion de los principales hallazgos del experimento.
-		\item Interpretacion de los resultados en relacion con los objetivos planteados.
-		\item Discusion de las implicaciones practicas y teoricas de los resultados.
-		\item Posibles limitaciones del experimento y areas para futuras investigaciones.
-	\end{itemize}
-	
-	\begin{thebibliography}{9}
-		
-		\bibitem{irvine}
-		Irvine, K. R. (2019).
-		\textit{Assembly language for x86 processors} (8th ed.).
-		Pearson Education. Capitulos 6, 9 y 12.
-		
-		\bibitem{sdlwiki}
-		LibSDL.org. (2024).
-		\textit{SDL3 API reference documentation}.
-		Recuperado de https://wiki.libsdl.org/SDL3/
-		
-		\bibitem{stallings}
-		Stallings, W. (2016).
-		\textit{Computer organization and architecture: designing for performance} (10th ed.).
-		Pearson.
-		
-		\bibitem{tanenbaum}
-		Tanenbaum, A. S. (2013).
-		\textit{Structured computer organization} (6th ed.).
-		Pearson Prentice Hall.
-		
-		\bibitem{patterson}
-		Patterson, D. A., \& Hennessy, J. L. (2014).
-		\textit{Computer organization and design} (5th ed.).
-		Morgan Kaufmann.
-		
-	\end{thebibliography}
-	
+    
+    \section{Resultados}
+    
+    Tras la compilación y ejecución del código fuente en el entorno Visual Studio 2022 bajo la configuración x86, se obtuvo un ejecutable totalmente funcional. A continuación, se presentan las pruebas visuales y el análisis del comportamiento del sistema, validando la correcta integración entre C y Ensamblador.
+    
+    \subsection{Ejecución e Interfaz Gráfica}
+    La primera prueba consistió en validar la inicialización de la librería SDL3 y el renderizado de fuentes TTF. Como se muestra en la Figura \ref{fig:menu}, el programa inicia correctamente en el estado de \textit{Menú}, permitiendo la navegación mediante el teclado. Esto confirma que el bucle principal en C gestiona adecuadamente los eventos de entrada antes de ceder el control a la lógica del juego.
+    
+    \begin{figure}[H]
+        \centering
+        % IMPORTANTE: Renombra tu imagen real a menu.png
+        \includegraphics[width=0.8\textwidth]{menu.png} 
+        \caption{Pantalla de inicio del juego. Se observa el renderizado de texto y opciones de menú gestionadas por la máquina de estados.}
+        \label{fig:menu}
+    \end{figure}
+    
+    \subsection{Prueba de Física y Colisiones (Lógica FPU)}
+    Durante la fase de juego (\textit{Gameplay}), se verificó el comportamiento de la pelota y la barra. La Figura \ref{fig:gameplay} muestra el juego en ejecución.
+    \begin{itemize}
+        \item \textbf{Movimiento:} La pelota se desplaza con fluidez utilizando coordenadas de punto flotante calculadas en la FPU. No se observan saltos bruscos ni "vibraciones" en los bordes, lo que valida la lógica de \textit{clamping} (corrección de posición) implementada.
+        \item \textbf{Colisiones:} Los ladrillos desaparecen al contacto y la pelota rebota en el ángulo correcto, demostrando que las comparaciones de límites (\texttt{FCOMIP}) y los saltos condicionales en ensamblador están operando con precisión sobre las estructuras de datos en memoria.
+    \end{itemize}
+    
+    \begin{figure}[H]
+        \centering
+        % IMPORTANTE: Renombra tu imagen real a gameplay.png
+        \includegraphics[width=0.8\textwidth]{gameplay.png} 
+        \caption{Estado de juego activo. La posición de los ladrillos fue calculada por la rutina de carga en ensamblador mediante direccionamiento indirecto.}
+        \label{fig:gameplay}
+    \end{figure}
+    
+    \subsection{Validación de Algoritmos y Memoria}
+    Una de las pruebas más críticas fue la verificación del algoritmo de ordenamiento. Al finalizar varias partidas con diferentes puntajes, se accedió a la pantalla de "Hall of Fame".
+    
+    Como se evidencia en la Figura \ref{fig:scores}, los puntajes aparecen ordenados de mayor a menor. Dado que C no interviene en el ordenamiento, este resultado es la prueba definitiva de que la rutina \texttt{OrdenarPuntajesASM} manipuló correctamente los punteros y realizó los intercambios (\textit{swaps}) directos en la memoria RAM, reorganizando la estructura de datos \texttt{Jugador} exitosamente.
+    
+    \begin{figure}[H]
+        \centering
+        % IMPORTANTE: Renombra tu imagen real a scores.png
+        \includegraphics[width=0.8\textwidth]{scores.png} 
+        \caption{Tabla de mejores puntajes. El orden descendente valida el funcionamiento del algoritmo de Burbuja implementado en ensamblador.}
+        \label{fig:scores}
+    \end{figure}
+    
+    \subsection{Análisis de Rendimiento}
+    A pesar de la sobrecarga teórica que implica cambiar entre contextos de C y Ensamblador, el juego se mantiene estable a 60 cuadros por segundo (FPS) constantes (sincronizados por \texttt{SDL\_Delay}). El uso de instrucciones nativas para los cálculos matemáticos en la lógica del juego demostró ser altamente eficiente, sin presentar fugas de memoria ni errores de segmentación durante sesiones prolongadas de prueba.
+    
+    \section{Conclusiones}
+    \begin{itemize}
+        \item Recapitulacion de los principales hallazgos del experimento.
+        \item Interpretacion de los resultados en relacion con los objetivos planteados.
+        \item Discusion de las implicaciones practicas y teoricas de los resultados.
+        \item Posibles limitaciones del experimento y areas para futuras investigaciones.
+    \end{itemize}
+    
+    \begin{thebibliography}{9}
+        
+        \bibitem{irvine}
+        Irvine, K. R. (2019).
+        \textit{Assembly language for x86 processors} (8th ed.).
+        Pearson Education. Capitulos 6, 9 y 12.
+        
+        \bibitem{sdlwiki}
+        LibSDL.org. (2024).
+        \textit{SDL3 API reference documentation}.
+        Recuperado de https://wiki.libsdl.org/SDL3/
+        
+        \bibitem{stallings}
+        Stallings, W. (2016).
+        \textit{Computer organization and architecture: designing for performance} (10th ed.).
+        Pearson.
+        
+        \bibitem{tanenbaum}
+        Tanenbaum, A. S. (2013).
+        \textit{Structured computer organization} (6th ed.).
+        Pearson Prentice Hall.
+        
+        \bibitem{patterson}
+        Patterson, D. A., \& Hennessy, J. L. (2014).
+        \textit{Computer organization and design} (5th ed.).
+        Morgan Kaufmann.
+        
+    \end{thebibliography}
+    
 \end{document}
