@@ -273,29 +273,41 @@ void OrdenarPuntajesASM() {
         mov esi, pLista
         mov ecx, n
         dec ecx
-        LoopExterno:
+        LoopExterno :
         push ecx
-        mov edi, esi
-        mov ebx, n
-        dec ebx
-        LoopInterno:
+            mov edi, esi
+            mov ebx, n
+            dec ebx
+            LoopInterno :
         mov eax, [edi + 16]
-        mov edx, [edi + 20 + 16]
-        cmp eax, edx
-        jge NoSwap
-        mov [edi + 16], edx
-        mov [edi + 20 + 16], eax
-        mov eax, [edi]; mov edx, [edi + 20]; mov [edi], edx; mov [edi + 20], eax
-        mov eax, [edi + 4]; mov edx, [edi + 24]; mov [edi + 4], edx; mov [edi + 24], eax
-        mov eax, [edi + 8]; mov edx, [edi + 28]; mov [edi + 8], edx; mov [edi + 28], eax
-        mov eax, [edi + 12]; mov edx, [edi + 32]; mov [edi + 12], edx; mov [edi + 32], eax
-        NoSwap:
+            mov edx, [edi + 20 + 16]
+            cmp eax, edx
+            jge NoSwap
+            mov[edi + 16], edx
+            mov[edi + 20 + 16], eax
+            mov eax, [edi]
+            mov edx, [edi + 20]
+            mov[edi], edx
+            mov[edi + 20], eax
+            mov eax, [edi + 4]
+            mov edx, [edi + 24]
+            mov[edi + 4], edx
+            mov[edi + 24], eax
+            mov eax, [edi + 8]
+            mov edx, [edi + 28]
+            mov[edi + 8], edx
+            mov[edi + 28], eax
+            mov eax, [edi + 12]
+            mov edx, [edi + 32]
+            mov[edi + 12], edx
+            mov[edi + 32], eax
+            NoSwap :
         add edi, 20
-        dec ebx
-        jnz LoopInterno
-        pop ecx
-        dec ecx
-        jnz LoopExterno
+            dec ebx
+            jnz LoopInterno
+            pop ecx
+            dec ecx
+            jnz LoopExterno
     }
 }
 
@@ -348,6 +360,7 @@ int main(int argc, char* argv[]) {
     int corriendo = 1;
     int vidas = 3;
     int puntaje = 0;
+    bool save_highscore = false;
 
     SDL_FRect paddle = { (ANCHO_VENTANA - PADDLE_ANCHO) / 2, ALTO_VENTANA - 60.0f, PADDLE_ANCHO, PADDLE_ALTO };
     SDL_FRect pelota = { ANCHO_VENTANA / 2, ALTO_VENTANA / 2, PELOTA_TAM, PELOTA_TAM };
@@ -506,6 +519,7 @@ int main(int argc, char* argv[]) {
             cmp input_enter, 1
             jne FinLogica
             mov estado_actual, ESTADO_MEJORES
+            mov save_highscore, 1
             jmp FinLogica
             LogicaMejores:
             cmp input_esc, 1
@@ -540,7 +554,8 @@ int main(int argc, char* argv[]) {
             FinLogica:
         }
 
-        if (estado_actual == ESTADO_MEJORES && input_enter) {
+        if (estado_actual == ESTADO_MEJORES && save_highscore) {
+            save_highscore = false;
             SDL_StopTextInput(ventana);
             if (strlen(inputText) == 0) strcpy_s(inputText, 16, "ANONIMO");
             strcpy_s(mejoresPuntajes[MAX_SCORES - 1].nombre, 16, inputText);
