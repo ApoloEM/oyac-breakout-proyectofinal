@@ -32,7 +32,8 @@ El núcleo del juego no es C estándar. Utilizamos bloques `__asm` para:
 * **Física de la Pelota:** Cálculos de trayectoria y velocidad utilizando registros de punto flotante (FPU `fld`, `fstp`).
 * **Sistema de Colisiones:** Detección de impacto AABB optimizada en ensamblador.
 * **Máquina de Estados:** Gestión del flujo del juego (Menú -> Juego -> Pausa -> Victoria) mediante manipulación directa de registros y saltos (`cmp`, `je`, `jmp`).
-* **Algoritmo de Ordenamiento:** Implementación manual de *Bubble Sort* en ASM para organizar la tabla de puntuaciones en tiempo real al guardar un récord.
+* **Ordenamiento (Bubble Sort):** Implementación manual de ordenamiento de burbuja en ASM para organizar la tabla de puntuaciones (`Hall of Fame`) en tiempo real.
+* **Generación de Mapas:** Lógica de lectura de matrices y asignación de propiedades de ladrillos hecha en bajo nivel.
 
 ### 🎮 Mecánicas de Juego
 * **Sistema de 10 Niveles:** Mapas progresivos con diseños únicos definidos por matrices.
