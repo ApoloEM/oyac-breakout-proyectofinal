@@ -67,29 +67,61 @@ El núcleo del juego no es C estándar. Utilizamos bloques `__asm` para:
 | | `←` / `→` | Cambiar valor |
 | **Final** | `Enter` | Guardar Récord y Continuar |
 
-## 🛠️ Instalación y Compilación
+## 🛠️ Guía de Instalación y Compilación
 
-⚠️ **Importante:** Este proyecto está diseñado para **Visual Studio** en arquitectura **x86** (32-bits). Por lo tanto, requiere compilarse en modo **x86 (32-bits)** debido a que el compilador MSVC de Visual Studio no admite `__asm` bloques en arquitectura x64.
+⚠️ **Requisito Crítico:** Este proyecto utiliza bloques de ensamblador en línea (`__asm`), los cuales **solo son soportados por el compilador MSVC en arquitectura x86 (32-bits)**. Si intentas compilar en x64, obtendrás errores de compilación.
 
-1.  **Clonar el repositorio:**
+### 1. Preparación de Librerías (SDL3)
+El proyecto requiere **SDL3** y **SDL3_ttf**.
+1.  Descargar **SDL3-devel-win32-vc.zip** desde [libsdl.org](https://github.com/libsdl-org/SDL/releases).
+2.  Descargar **SDL3_ttf-devel-vc.zip** desde [el repo de SDL_ttf](https://github.com/libsdl-org/SDL_ttf/releases).
+3.  Descomprimir ambas en una ruta conocida (ej. `C:\Librerias\SDL3` y `C:\Librerias\SDL3_ttf`).
+
+### 2. Configuración en Visual Studio 2022
+Abre `BreakoutGame.sln` y sigue estos pasos:
+
+#### Paso A: Configurar Arquitectura
+En la barra superior de Visual Studio, asegúrate de que el selector de arquitectura diga **x86** (o Win32). **No usar x64**.
+
+#### Paso B: Rutas de Inclusión (Headers)
+* Clic derecho en el proyecto -> **Propiedades**.
+* Ve a **C/C++** -> **General** -> **Additional Include Directories**.
+* Añade las carpetas `include` de tus descargas:
+    * `C:\Librerias\SDL3\include`
+    * `C:\Librerias\SDL3_ttf\include`
+
+#### Paso C: Rutas de Librerías (Libs)
+* Ve a **Linker** -> **General** -> **Additional Library Directories**.
+* Añade las carpetas `lib\x86` de tus descargas:
+    * `C:\Librerias\SDL3\lib\x86`
+    * `C:\Librerias\SDL3_ttf\lib\x86`
+
+#### Paso D: Dependencias (Input)
+* Ve a **Linker** -> **Input** -> **Additional Dependencies**.
+* Escribe manualmente:
+    ```
+    SDL3.lib;SDL3_ttf.lib
+    ```
+
+### 3. Archivos Runtime (DLLs y Assets)
+Para que el juego funcione, el ejecutable necesita encontrar las librerías dinámicas y la fuente.
+
+1.  Compila el proyecto (Ctrl + Shift + B).
+2.  Ve a la carpeta donde se creó el `.exe` (usualmente `\Debug` o `\Release`).
+3.  **Copia y pega los siguientes archivos junto al `.exe`**:
+    * `SDL3.dll` (Desde `SDL3\lib\x86`)
+    * `SDL3_ttf.dll` (Desde `SDL3_ttf\lib\x86`)
+    * **`RETRO.TTF`** (Incluido en este repositorio)
+
+### 4.  Clonar el repositorio:
     ```bash
     git clone [https://github.com/TU_USUARIO/oyac-breakout-proyectofinal.git](https://github.com/TU_USUARIO/oyac-breakout-proyectofinal.git)
     ```
-    
-2.  **Requisitos Previos:**
-    * Visual Studio 2022 (con soporte para C++).
-    * Librerías **SDL3** y **SDL3_ttf** (incluidas en la estructura de carpetas o descargables desde [libsdl.org](https://libsdl.org/)).
 
-3.  **Configuración del Proyecto:**
-    * Abrir `BreakoutGame.sln`.
-    * Seleccionar la configuración **Debug** o **Release** y la plataforma **x86**.
-    * Verificar que las rutas de los *Include Directories* y *Library Directories* apunten a las carpetas de SDL3 en tu equipo.
-
-
-
-4.  **Ejecución:**
+**Ejecución:**
     * Compilar la solución.
-    * **Importante:** Asegúrate de que los archivos `SDL3.dll`, `SDL3_ttf.dll` y `RETRO.TTF` estén en la misma carpeta que el ejecutable generado (`Debug` o `Release`).
+
+> **Nota:** Si el juego no abre o se cierra inmediatamente, verifica que `RETRO.TTF` esté en la misma carpeta que el ejecutable. El código busca la fuente en la ruta relativa actual.
 
 ## 👥 Autores
 
