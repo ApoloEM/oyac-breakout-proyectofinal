@@ -118,8 +118,8 @@ Para que el juego funcione, el ejecutable necesita encontrar las librerías din�
     git clone [https://github.com/TU_USUARIO/oyac-breakout-proyectofinal.git](https://github.com/TU_USUARIO/oyac-breakout-proyectofinal.git)
     ```
 
-**Ejecución:**
-    * Compilar la solución.
+#### **Ejecución:**
+* Compilar la solución.
 
 > **Nota:** Si el juego no abre o se cierra inmediatamente, verifica que `RETRO.TTF` esté en la misma carpeta que el ejecutable. El código busca la fuente en la ruta relativa actual.
 
