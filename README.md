@@ -8,7 +8,7 @@ Un clon avanzado del clásico juego **Breakout** desarrollado en **C** puro y **
 
 A diferencia de implementaciones estándar, aquí **no se utilizan librerías de física**. Toda la detección de colisiones, cálculo de trayectorias y ordenamiento de datos ha sido escrita a mano en bloques de ensamblador (`__asm`), utilizando la FPU (Floating Point Unit) para una precisión matemática superior.
 
-Este proyecto demuestra la integración eficiente entre lenguajes de alto nivel para la gestión de medios y bajo nivel para el procesamiento lógico.
+Esto demuestra la integración eficiente entre lenguajes de alto nivel para la gestión de medios y bajo nivel para el procesamiento lógico.
 
 
 ## 📸 Capturas de Pantalla
